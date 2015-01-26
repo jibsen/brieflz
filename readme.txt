@@ -2,9 +2,9 @@
 
 BriefLZ  -  small fast Lempel-Ziv
 
-Version 1.02
+Version 1.03
 
-Copyright (c) 2002-2003 by Joergen Ibsen / Jibz
+Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
 All Rights Reserved
 
 http://www.ibsensoftware.com/
@@ -127,7 +127,7 @@ License
 
    BriefLZ  -  small fast Lempel-Ziv
 
-   Copyright (c) 2002-2003 by Joergen Ibsen / Jibz
+   Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
    All Rights Reserved
 
    http://www.ibsensoftware.com/
@@ -154,6 +154,8 @@ License
 
 History
 -------
+
+ v1.03  *: The blzpack code should hopefully be more endian-neutral now.
 
  v1.02  *: Made it more obvious that blz_depack requires the length
            of the depacked data, not the packed data. Updated the

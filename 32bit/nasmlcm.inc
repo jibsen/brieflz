@@ -1,7 +1,7 @@
 ;;
-;; NASM linker compatibility macros 2002.07.24
+;; NASM linker compatibility macros 2004.01.02
 ;;
-;; Copyright (c) 2001-2003 by Joergen Ibsen / Jibz
+;; Copyright (c) 2001-2004 by Joergen Ibsen / Jibz
 ;; All Rights Reserved
 ;;
 ;; http://www.ibsensoftware.com/
@@ -75,8 +75,8 @@
 ;
 ; ====================================================================
 
-%ifndef __NASMLCM_INC_INCLUDED
-%define __NASMLCM_INC_INCLUDED
+%ifndef NASMLCM_INC_INCLUDED
+%define NASMLCM_INC_INCLUDED
 
 %ifdef _DLL_
   %ifndef _OBJ_
@@ -259,7 +259,9 @@
 
   %macro lcmadjust 1
     %if %1 < 128
-      add esp, byte %1
+      %if %1 > 0
+        add esp, byte %1
+      %endif
     %else
       add esp, %1
     %endif
@@ -308,7 +310,9 @@
 
     %macro lcmadjust 1
       %if %1 < 128
-        add esp, byte %1
+        %if %1 > 0
+          add esp, byte %1
+        %endif
       %else
         add esp, %1
       %endif
@@ -323,4 +327,4 @@
 
 %endif ; _ELF_
 
-%endif ; __NASMLCM_INC_INCLUDED
+%endif ; NASMLCM_INC_INCLUDED

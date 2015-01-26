@@ -1,7 +1,7 @@
 /*
  * blzpack  -  BriefLZ example
  *
- * Copyright (c) 2002-2003 by Joergen Ibsen / Jibz
+ * Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
@@ -42,9 +42,27 @@
 
 #define BUFSIZE (56*1024)
 
+static void put_uint32(char *p, unsigned long val)
+{
+   *p++ = (char) ((val >> 24) & 0x00ff);
+   *p++ = (char) ((val >> 16) & 0x00ff);
+   *p++ = (char) ((val >> 8 ) & 0x00ff);
+   *p   = (char) ((val      ) & 0x00ff);
+}
+
+static unsigned long get_uint32(const char *p)
+{
+   unsigned long v = (unsigned long) *p++ & 0x00ff;
+   v = (v << 8) | ((unsigned long) *p++ & 0x00ff);
+   v = (v << 8) | ((unsigned long) *p++ & 0x00ff);
+   v = (v << 8) | ((unsigned long) *p & 0x00ff);
+
+   return v;
+}
+
 void compress_file(const char *oldname, const char *packedname)
 {
-   unsigned long header[6] = { 0x1A7A6C62, 1, 0, 0, 0, 0 };
+   char header[6*4] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
    FILE *oldfile = NULL;
    FILE *packedfile = NULL;
    unsigned long outsize = 0;
@@ -104,10 +122,10 @@ void compress_file(const char *oldname, const char *packedname)
          return;
       }
 
-      header[2] = packedsize;
-      header[3] = is_crc32_asm_fast((unsigned char *)packed, packedsize);
-      header[4] = n_read;
-      header[5] = is_crc32_asm_fast((unsigned char *)data, n_read);
+      put_uint32(header + 2*4, packedsize);
+      put_uint32(header + 3*4, is_crc32_asm_fast((unsigned char *)packed, packedsize));
+      put_uint32(header + 4*4, n_read);
+      put_uint32(header + 5*4, is_crc32_asm_fast((unsigned char *)data, n_read));
 
       fwrite(header, 1, sizeof(header), packedfile);
       fwrite(packed, 1, packedsize, packedfile);
@@ -131,7 +149,7 @@ void compress_file(const char *oldname, const char *packedname)
 
 void decompress_file(const char *packedname, const char *newname)
 {
-   unsigned long header[6];
+   char header[6*4];
    FILE *newfile = NULL;
    FILE *packedfile = NULL;
    unsigned long outsize = 0;
@@ -174,19 +192,21 @@ void decompress_file(const char *packedname, const char *newname)
       printf("%c\r", rotator[counter++]);
       counter &= 0x03;
 
-      if ((header[0] != 0x1A7A6C62) || (header[1] != 1) || (header[2] > BUFSIZE))
+      if ((get_uint32(header + 0*4) != 0x626C7A1A) ||
+          (get_uint32(header + 1*4) != 1) ||
+          (get_uint32(header + 2*4) > BUFSIZE))
       {
          printf("ERR: invalid header in compressed file\n");
          return;
       }
 
-      if (fread(packed, 1, header[2], packedfile) != header[2])
+      if (fread(packed, 1, get_uint32(header + 2*4), packedfile) != get_uint32(header + 2*4))
       {
          printf("ERR: error reading block from compressed file\n");
          return;
       }
 
-      if (header[3] != is_crc32_asm_fast((unsigned char *)packed, header[2]))
+      if (get_uint32(header + 3*4) != is_crc32_asm_fast((unsigned char *)packed, get_uint32(header + 2*4)))
       {
          printf("ERR: compressed data crc error\n");
          return;
@@ -194,15 +214,15 @@ void decompress_file(const char *packedname, const char *newname)
 
       depackedsize = blz_depack_asm((unsigned char *)packed,
                                     (unsigned char *)data,
-                                    header[4]);
+                                    get_uint32(header + 4*4));
 
-      if (depackedsize != header[4])
+      if (depackedsize != get_uint32(header + 4*4))
       {
          printf("ERR: an error occured while decompressing\n");
          return;
       }
 
-      if (header[5] != is_crc32_asm_fast((unsigned char *)data, depackedsize))
+      if (get_uint32(header + 5*4) != is_crc32_asm_fast((unsigned char *)data, depackedsize))
       {
          printf("ERR: decompressed file crc error\n");
          return;
@@ -236,7 +256,7 @@ void show_syntax()
 int main(int argc, char *argv[])
 {
    printf("===============================================================================\n"
-          "BriefLZ example                 Copyright (c) 2002-2003 by Joergen Ibsen / Jibz\n"
+          "BriefLZ example                 Copyright (c) 2002-2004 by Joergen Ibsen / Jibz\n"
           "                                                            All Rights Reserved\n\n"
           "                                                  http://www.ibsensoftware.com/\n"
           "===============================================================================\n\n");

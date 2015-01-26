@@ -1,7 +1,7 @@
 /*
  * fast assembler crc32, header file
  *
- * Copyright (c) 1998-2003 by Joergen Ibsen / Jibz
+ * Copyright (c) 1998-2004 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/

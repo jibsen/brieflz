@@ -3,7 +3,7 @@
 ;;
 ;; NASM assembler depacker
 ;;
-;; Copyright (c) 2002-2003 by Joergen Ibsen / Jibz
+;; Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
 ;; All Rights Reserved
 ;;
 ;; http://www.ibsensoftware.com/
