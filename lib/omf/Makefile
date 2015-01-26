@@ -3,7 +3,7 @@
 ##
 ## Watcom C/C++ OMF makefile (GNU Make)
 ##
-## Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
+## Copyright (c) 2002-2015 by Joergen Ibsen / Jibz
 ## All Rights Reserved
 ##
 ## http://www.ibsensoftware.com/

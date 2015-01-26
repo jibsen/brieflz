@@ -1,28 +1,5 @@
 
 BriefLZ - small fast Lempel-Ziv
-===============================
-
-Version 1.05
-
-Copyright (c) 2002-2015 Joergen Ibsen
-
-<http://www.ibsensoftware.com/>
-
-
-About
------
-
-BriefLZ is a small and fast open source implementation of a Lempel-Ziv
-style compression algorithm. The main focus is on speed, but the ratios
-achieved are quite good compared to similar algorithms.
-
-Please read the documentation for more information.
-
-
-License
--------
-
-BriefLZ - small fast Lempel-Ziv
 
 Copyright (c) 2002-2015 Joergen Ibsen
 

@@ -3,7 +3,7 @@
  *
  * C depacker
  *
- * Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
+ * Copyright (c) 2002-2015 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
@@ -36,91 +36,91 @@
 #include "brieflz.h"
 
 /* internal data structure */
-typedef struct {
-   const unsigned char *source;
-   unsigned char *destination;
-   unsigned int tag;
-   unsigned int bitcount;
-} BLZDEPACKDATA;
+struct BLZDEPACKDATA {
+	const unsigned char *source;
+	unsigned char *destination;
+	unsigned int tag;
+	unsigned int bitcount;
+};
 
-static int blz_getbit(BLZDEPACKDATA *ud)
+static int blz_getbit(struct BLZDEPACKDATA *ud)
 {
-   unsigned int bit;
+	unsigned int bit;
 
-   /* check if tag is empty */
-   if (!ud->bitcount--)
-   {
-      /* load next tag */
-      ud->tag = ud->source[0] + ((unsigned int)ud->source[1] << 8);
-      ud->source += 2;
-      ud->bitcount = 15;
-   }
+	/* check if tag is empty */
+	if (!ud->bitcount--) {
+		/* load next tag */
+		ud->tag = ud->source[0] + ((unsigned int) ud->source[1] << 8);
+		ud->source += 2;
+		ud->bitcount = 15;
+	}
 
-   /* shift bit out of tag */
-   bit = (ud->tag >> 15) & 0x01;
-   ud->tag <<= 1;
+	/* shift bit out of tag */
+	bit = (ud->tag >> 15) & 0x01;
+	ud->tag <<= 1;
 
-   return bit;
+	return bit;
 }
 
-static unsigned int blz_getgamma(BLZDEPACKDATA *ud)
+static unsigned int blz_getgamma(struct BLZDEPACKDATA *ud)
 {
-   unsigned int result = 1;
+	unsigned int result = 1;
 
-   /* input gamma2-encoded bits */
-   do {
-      result = (result << 1) + blz_getbit(ud);
-   } while (blz_getbit(ud));
+	/* input gamma2-encoded bits */
+	do {
+		result = (result << 1) + blz_getbit(ud);
+	} while (blz_getbit(ud));
 
-   return (result);
+	return result;
 }
 
 unsigned int BLZCC blz_depack(const void *source,
                               void *destination,
                               unsigned int depacked_length)
 {
-   BLZDEPACKDATA ud;
-   unsigned int length = 1;
+	struct BLZDEPACKDATA ud;
+	unsigned int length = 1;
 
-   /* check for length == 0 */
-   if (depacked_length == 0) return 0;
+	/* check for length == 0 */
+	if (depacked_length == 0) {
+		return 0;
+	}
 
-   ud.source = (const unsigned char *) source;
-   ud.destination = (unsigned char *) destination;
-   ud.bitcount = 0;
+	ud.source = (const unsigned char *) source;
+	ud.destination = (unsigned char *) destination;
+	ud.bitcount = 0;
 
-   /* first byte verbatim */
-   *ud.destination++ = *ud.source++;
+	/* first byte verbatim */
+	*ud.destination++ = *ud.source++;
 
-   /* main decompression loop */
-   while (length < depacked_length)
-   {
-      if (blz_getbit(&ud))
-      {
-     /* input match length and position */
-     unsigned int len = blz_getgamma(&ud) + 2;
-     unsigned int pos = blz_getgamma(&ud) - 2;
+	/* main decompression loop */
+	while (length < depacked_length) {
+		if (blz_getbit(&ud)) {
+			/* input match length and position */
+			unsigned int len = blz_getgamma(&ud) + 2;
+			unsigned int pos = blz_getgamma(&ud) - 2;
 
-     pos = (pos << 8) + *ud.source++ + 1;
+			pos = (pos << 8) + *ud.source++ + 1;
 
-     /* copy match */
-     {
-        const unsigned char *ppos = ud.destination - pos;
-        int i;
-        for (i = len; i > 0; --i) *ud.destination++ = *ppos++;
-     }
+			/* copy match */
+			{
+				const unsigned char *ppos = ud.destination - pos;
+				int i;
+				for (i = len; i > 0; --i) {
+					*ud.destination++ = *ppos++;
+				}
+			}
 
-     length += len;
+			length += len;
+		}
+		else {
+			/* copy literal */
+			*ud.destination++ = *ud.source++;
 
-      } else {
+			length++;
+		}
+	}
 
-     /* copy literal */
-     *ud.destination++ = *ud.source++;
-
-     length++;
-      }
-   }
-
-   /* return decompressed length */
-   return length;
+	/* return decompressed length */
+	return length;
 }

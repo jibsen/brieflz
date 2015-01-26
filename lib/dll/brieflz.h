@@ -3,7 +3,7 @@
  *
  * C/C++ dll header file
  *
- * Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
+ * Copyright (c) 2002-2015 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
@@ -14,19 +14,23 @@
 
 /* calling convention */
 #ifndef BLZCC
-#define BLZCC __stdcall
+# define BLZCC __stdcall
 #endif
 
 #ifndef DllSpec
- #ifdef BLZ_DLL_BUILD
-  #define DllSpec __declspec( dllexport )
- #else
-  #define DllSpec __declspec( dllimport )
- #endif
+# ifdef BLZ_DLL_BUILD
+#  define DllSpec __declspec( dllexport )
+# else
+#  define DllSpec __declspec( dllimport )
+# endif
 #endif
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifndef BLZ_ERROR
+# define BLZ_ERROR (-1)
 #endif
 
 /**
@@ -55,6 +59,23 @@ DllSpec
 unsigned int BLZCC blz_depack(const void *source,
                               void *destination,
                               unsigned int depacked_length);
+
+
+/**
+ * Decompress data safely.
+ * @param source - pointer to the compressed data.
+ * @param srclen - the size of the source buffer in bytes.
+ * @param destination - where to store the decompressed data.
+ * @param depacked_length - the length of the decompressed data.
+ * @return the length of the decompressed data, or BLZ_ERROR on error.
+ * @note This functions reads at most srclen bytes from source[], and
+ * writes at most depacked_length bytes to destination[].
+ */
+DllSpec
+unsigned int BLZCC blz_depack_safe(const void *source,
+                                   unsigned int srclen,
+                                   void *destination,
+                                   unsigned int depacked_length);
 
 
 /**
