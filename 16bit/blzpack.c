@@ -88,34 +88,7 @@ void compress_file(const char *oldname, const char *packedname)
 
    clock_start = clock();
 
-   while ((n_read = fread(data, 1, BUFSIZE, oldfile)) == (size_t)BUFSIZE)
-   {
-      printf("%c\r", rotator[counter++]);
-      counter &= 0x03;
-
-      packedsize = blz16_pack_asm((unsigned char *)data,
-                                  (unsigned char *)packed,
-                                  BUFSIZE,
-                                  (unsigned char *)workmem);
-
-      if (packedsize == 0)
-      {
-         printf("ERR: an error occured while compressing\n");
-         return;
-      }
-
-      header[2] = packedsize & 0x0000ffff;
-      header[3] = is16_crc32_asm((unsigned char *)packed, packedsize);
-      header[4] = BUFSIZE & 0x0000ffff;
-      header[5] = is16_crc32_asm((unsigned char *)data, BUFSIZE);
-
-      fwrite(header, 1, sizeof(header), packedfile);
-      fwrite(packed, 1, packedsize, packedfile);
-
-      outsize += packedsize + sizeof(header);
-   }
-
-   if (n_read)
+   while ((n_read = fread(data, 1, BUFSIZE, oldfile)) > 0)
    {
       printf("%c\r", rotator[counter++]);
       counter &= 0x03;

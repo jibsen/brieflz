@@ -67,33 +67,25 @@ static void blz_putbit(BLZPACKDATA *ud, const int bit)
    }
 
    /* shift bit into tag */
-   if (bit)
-   {
-      ud->tag = (ud->tag << 1) + 0x01;
-   } else {
-      ud->tag <<= 1;
-   }
+   ud->tag = (ud->tag << 1) + (bit ? 1 : 0);
 }
 
 static void blz_putgamma(BLZPACKDATA *ud, unsigned int val)
 {
-   int invertlen = 0;
-   unsigned int invert = 0;
+   unsigned int mask = val >> 1;
 
-   /* rotate bits into invert (except last) */
-   do {
-      invert = (invert << 1) | (val & 0x0001);
-      invertlen++;
-   } while ((val >>= 1) > 1);
+   /* mask = highest_bit(val >> 1) */
+   while (mask & (mask - 1)) mask &= mask - 1;
 
    /* output gamma2-encoded bits */
-   while (--invertlen)
+   blz_putbit(ud, val & mask);
+
+   while (mask >>= 1)
    {
-      blz_putbit(ud, invert & 0x0001);
       blz_putbit(ud, 1);
-      invert >>= 1;
+      blz_putbit(ud, val & mask);
    }
-   blz_putbit(ud, invert & 0x0001);
+
    blz_putbit(ud, 0);
 }
 

@@ -77,12 +77,12 @@ static unsigned int blz_getgamma(BLZDEPACKDATA *ud)
 
 unsigned int blz_depack(const void *source,
                         void *destination,
-                        unsigned int length)
+                        unsigned int depacked_length)
 {
    BLZDEPACKDATA ud;
 
    /* check for length == 0 */
-   if (length == 0) return 0;
+   if (depacked_length == 0) return 0;
 
    ud.source = source;
    ud.destination = destination;
@@ -91,13 +91,13 @@ unsigned int blz_depack(const void *source,
    *ud.destination++ = *ud.source++;
 
    /* check for length == 1 */
-   if (--length == 0) return 1;
+   if (--depacked_length == 0) return 1;
 
    /* init first tag */
    ud.bitcount = 0;
 
    /* main decompression loop */
-   while (length > 0)
+   while (depacked_length > 0)
    {
       if (blz_getbit(&ud))
       {
@@ -114,14 +114,14 @@ unsigned int blz_depack(const void *source,
 	    for (i = len; i > 0; --i) *ud.destination++ = *ppos++;
 	 }
 
-	 length -= len;
+	 depacked_length -= len;
 
       } else {
 
 	 /* copy literal */
 	 *ud.destination++ = *ud.source++;
 
-	 length--;
+	 depacked_length--;
       }
    }
 

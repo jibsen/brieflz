@@ -48,7 +48,7 @@ global _blz16_depack_asm
 _blz16_depack_asm:
     ; blz16_depack_asm_small(const void far *source,
     ;                        void far *destination,
-    ;                        unsigned short length);
+    ;                        unsigned short depacked_length);
 
     .len$  equ 6*2 + 2 + 8
     .dst$  equ 6*2 + 2 + 4

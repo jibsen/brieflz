@@ -2,10 +2,12 @@
 
 BriefLZ  -  small fast Lempel-Ziv
 
-Version 1.00
+Version 1.02
 
 Copyright (c) 2002-2003 by Joergen Ibsen / Jibz
 All Rights Reserved
+
+http://www.ibsensoftware.com/
 
 
 
@@ -68,11 +70,11 @@ Functionality
 
  unsigned int blz_depack_asm(void *source,
                              void *destination,
-                             unsigned int length);
+                             unsigned int depacked_length);
 
  The decompression function blz_depack_asm takes three parameters,
  a pointer to the compressed data, a pointer to where the decompressed
- data should be stored, and the length of the decompressed data. It
+ data should be stored, and the length of the _decompressed_ data. It
  returns the length of the decompressed data.
 
 
@@ -148,3 +150,17 @@ License
 
      3. This notice may not be removed or altered from any source
         distribution.
+
+
+History
+-------
+
+ v1.02  *: Made it more obvious that blz_depack requires the length
+           of the depacked data, not the packed data. Updated the
+           documentation.
+
+ v1.01   : Made a few changes in the C source.
+
+ v1.00  *: First release.
+
+ Project started November 12th 2002.

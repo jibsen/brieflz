@@ -12,7 +12,7 @@
 target  = blzpack.exe
 objects = blzpack.o brieflz.o depack.o crc32.o
 
-cflags  = -s -Wall -O3
+cflags  = -s -Wall -O2
 ldflags = $(cflags)
 
 .PHONY: all clean

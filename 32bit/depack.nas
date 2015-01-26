@@ -78,7 +78,7 @@ lcmexport blz_depack_asm,12
 lcmlabel blz_depack_asm,12
     ; blz_depack_asm(const void *source,
     ;                void *destination,
-    ;                unsigned int length);
+    ;                unsigned int depacked_length);
 
     .len$  equ 3*4 + 4 + 8
     .dst$  equ 3*4 + 4 + 4

@@ -7,8 +7,8 @@
  * http://www.ibsensoftware.com/
  */
 
-#ifndef __CRC32_H_INCLUDED
-#define __CRC32_H_INCLUDED
+#ifndef CRC32_H_INCLUDED
+#define CRC32_H_INCLUDED
 
 /* calling convention */
 #ifndef BLZCC
@@ -32,4 +32,4 @@ unsigned long BLZCC is16_crc32_asm(const void far *source,
 } /* extern "C" */
 #endif
 
-#endif /* __CRC32_H_INCLUDED */
+#endif /* CRC32_H_INCLUDED */

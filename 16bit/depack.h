@@ -9,8 +9,8 @@
  * http://www.ibsensoftware.com/
  */
 
-#ifndef __DEPACK_H_INCLUDED
-#define __DEPACK_H_INCLUDED
+#ifndef DEPACK_H_INCLUDED
+#define DEPACK_H_INCLUDED
 
 /* calling convention */
 #ifndef BLZCC
@@ -29,10 +29,10 @@ extern "C" {
 
 unsigned short BLZCC blz16_depack_asm(const void far *source,
                                       void far *destination,
-                                      unsigned short length);
+                                      unsigned short depacked_length);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* __DEPACK_H_INCLUDED */
+#endif /* DEPACK_H_INCLUDED */

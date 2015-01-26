@@ -9,8 +9,8 @@
  * http://www.ibsensoftware.com/
  */
 
-#ifndef __BRIEFLZ_H_INCLUDED
-#define __BRIEFLZ_H_INCLUDED
+#ifndef BRIEFLZ_H_INCLUDED
+#define BRIEFLZ_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,4 +31,4 @@ unsigned int blz_pack(const void *source,
 } /* extern "C" */
 #endif
 
-#endif /* __BRIEFLZ_H_INCLUDED */
+#endif /* BRIEFLZ_H_INCLUDED */

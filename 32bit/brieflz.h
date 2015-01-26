@@ -9,8 +9,8 @@
  * http://www.ibsensoftware.com/
  */
 
-#ifndef __BRIEFLZ_H_INCLUDED
-#define __BRIEFLZ_H_INCLUDED
+#ifndef BRIEFLZ_H_INCLUDED
+#define BRIEFLZ_H_INCLUDED
 
 /* calling convention */
 #ifndef BLZCC
@@ -40,4 +40,4 @@ unsigned int BLZCC blz_pack_asm(const void *source,
 } /* extern "C" */
 #endif
 
-#endif /* __BRIEFLZ_H_INCLUDED */
+#endif /* BRIEFLZ_H_INCLUDED */
