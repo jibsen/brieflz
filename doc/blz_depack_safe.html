@@ -15,19 +15,20 @@
         <td class="isdesc">
 
 <div class="topnav">
- <a href="blz_pack.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="blz_depack.html">&lt;&lt;&nbsp;prev</a> |
  <a href="reference.html">up</a> |
- <a href="blz_depack_safe.html">next&nbsp;&gt;&gt;</a>
+ <a href="blz_workmem_size.html">next&nbsp;&gt;&gt;</a>
 </div>
 
-<div class="title">&lt;brieflz.h&gt; - blz_depack</div>
+<div class="title">&lt;brieflz.h&gt; - blz_depack_safe</div>
 
 <div class="function">
 
 <pre class="declaration">
-<span class="ctype">size_t</span> <span class="cfunc">blz_depack</span>( <span class="ckeyw">const</span>&nbsp;<span class="ctype">void</span>&nbsp;*<span class="cvar">source</span>,
-                   <span class="ctype">void</span>&nbsp;*<span class="cvar">destination</span>,
-                   <span class="ctype">size_t</span>&nbsp;<span class="cvar">depacked_size</span> );
+<span class="ctype">size_t</span> <span class="cfunc">blz_depack_safe</span>( <span class="ckeyw">const</span>&nbsp;<span class="ctype">void</span>&nbsp;*<span class="cvar">source</span>,
+                        <span class="ctype">size_t</span>&nbsp;<span class="cvar">srclen</span>,
+                        <span class="ctype">void</span>&nbsp;*<span class="cvar">destination</span>,
+                        <span class="ctype">size_t</span>&nbsp;<span class="cvar">depacked_size</span> );
 </pre>
 
  <div class="description">
@@ -41,10 +42,17 @@
   <p>The <code>depacked_size</code> parameter is the size of the
   original uncompressed data.</p>
 
+  <p>This function reads at most <code>srclen</code> bytes from
+  <code>source[]</code>, and writes at most <code>depacked_size</code>
+  bytes to <code>destination[]</code>. If there is not enough
+  source or destination space, or a decoding error occurs,
+  the function returns <code>BLZ_ERROR</code>.</p>
+
   <dl>
    <dt>Parameters:</dt>
    <dd>
     <code>source</code> - pointer to the compressed data.<br />
+    <code>srclen</code> - the size of the source buffer in bytes.<br />
     <code>destination</code> - pointer to where the decompressed data
      should be stored.<br />
     <code>depacked_size</code> - the size in bytes of the decompressed
@@ -62,9 +70,9 @@
 &nbsp;<br />
 
 <div class="botnav">
- <a href="blz_pack.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="blz_depack.html">&lt;&lt;&nbsp;prev</a> |
  <a href="reference.html">up</a> |
- <a href="blz_depack_safe.html">next&nbsp;&gt;&gt;</a>
+ <a href="blz_workmem_size.html">next&nbsp;&gt;&gt;</a>
 </div>
 
         </td>
