@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <title>BriefLZ - brieflz.h - blz_max_packed_size</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link href="ahob.css" title="A Hint of Blue" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+
+    <table class="ismain">
+      <tr>
+        <td class="isdesc">
+
+<div class="topnav">
+ <a href="blz_workmem_size.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="reference.html">up</a> |
+ <a href="blz_crc32.html">next&nbsp;&gt;&gt;</a>
+</div>
+
+<div class="title">&lt;brieflz.h&gt; - blz_max_packed_size</div>
+
+<div class="function">
+
+<pre class="declaration">
+size_t <b>blz_max_packed_size</b>( size_t&nbsp;input_size );
+</pre>
+
+ <div class="description">
+
+  <p>Computes the maximum possible compressed size possible when
+  compressing <code>input_size</code> bytes of incompressible data.</p>
+
+  <p>The current code returns
+  <code>(input_size + (input_size / 8) + 64)</code>.</p>
+
+  <dl>
+   <dt>Parameters:</dt>
+   <dd>
+    <code>input_size</code> - the length of the uncompressed data in
+     bytes.<br />
+   </dd>
+   <dt>Returns:</dt>
+   <dd>
+    the maximum possible size of the compressed data.
+   </dd>
+  </dl>
+
+ </div>
+</div>
+
+&nbsp;<br />
+
+<div class="botnav">
+ <a href="blz_workmem_size.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="reference.html">up</a> |
+ <a href="blz_crc32.html">next&nbsp;&gt;&gt;</a>
+</div>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <title>BriefLZ - brieflz.h - blz_pack</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link href="ahob.css" title="A Hint of Blue" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+
+    <table class="ismain">
+      <tr>
+        <td class="isdesc">
+
+<div class="topnav">
+ <span class="disabled">&lt;&lt;&nbsp;prev</span> |
+ <a href="reference.html">up</a> |
+ <a href="blz_depack.html">next&nbsp;&gt;&gt;</a>
+</div>
+
+<div class="title">&lt;brieflz.h&gt; - blz_pack</div>
+
+<div class="function">
+
+<pre class="declaration">
+size_t <b>blz_pack</b>( const&nbsp;void&nbsp;*source,
+                 void&nbsp;*destination,
+                 size_t&nbsp;length,
+                 void&nbsp;*workmem );
+</pre>
+
+ <div class="description">
+
+  <p>Compresses <code>length</code> bytes of data from
+  <code>source[]</code> into <code>destination[]</code>, using
+  <code>workmem[]</code> for temporary storage.</p>
+
+  <p>The <code>destination[]</code> buffer should be large enough to hold
+  <code><a href="blz_max_packed_size.html">blz_max_packed_size</a>(length)</code>
+  bytes.</p>
+
+  <p>The <code>workmem[]</code> buffer should be
+  <code><a href="blz_workmem_size.html">blz_workmem_size</a>(length)</code>
+  bytes large.</p>
+
+  <dl>
+   <dt>Parameters:</dt>
+   <dd>
+    <code>source</code> - pointer to the data to be compressed.<br />
+    <code>destination</code> - pointer to where the compressed data
+     should be stored.<br />
+    <code>length</code> - the length of the uncompressed data in
+     bytes.<br />
+    <code>workmem</code> - pointer to the work memory which is used
+     during compression.<br />
+   </dd>
+   <dt>Returns:</dt>
+   <dd>
+    the length of the compressed data, or -1 on error.
+   </dd>
+  </dl>
+
+ </div>
+</div>
+
+&nbsp;<br />
+
+<div class="botnav">
+ <span class="disabled">&lt;&lt;&nbsp;prev</span> |
+ <a href="reference.html">up</a> |
+ <a href="blz_depack.html">next&nbsp;&gt;&gt;</a>
+</div>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+
+</html>

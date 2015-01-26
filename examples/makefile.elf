@@ -1,0 +1,32 @@
+##
+## blzpack  -  BriefLZ example
+##
+## GCC makefile (Linux, FreeBSD, BeOS, QNX, ..)
+##
+## Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+## All Rights Reserved
+##
+## http://www.ibsensoftware.com/
+##
+
+target  = blzpack
+objects = blzpack.o brieflz.o crc32.o depack.o
+
+cflags   = -s -Wall -O2 -I../include
+ldflags  = $(cflags)
+
+.PHONY: all clean
+
+all: $(target)
+
+$(target): $(objects)
+	gcc $(ldflags) -o $@ $^
+
+%.o : %.c
+	gcc $(cflags) -c $<
+
+%.o : ../src/%.c
+	gcc $(cflags) -c $<
+
+clean:
+	$(RM) $(objects) $(target)

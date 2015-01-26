@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <title>BriefLZ - Source Code</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link href="ahob.css" title="A Hint of Blue" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+
+    <table class="ismain">
+      <tr>
+        <td class="isdesc">
+
+<div class="topnav">
+ <a href="license.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="index.html">home</a> |
+ <a href="examples.html">next&nbsp;&gt;&gt;</a>
+</div>
+
+<div class="title">Source Code</div>
+
+<p class="first">This package contains the following BriefLZ
+implementations:</p>
+
+<ul>
+ <li>32-bit ANSI C [<code>src/</code>]</li>
+ <li>32-bit x86 assembler (386+), speed-optimised [<code>src/fast</code>]</li>
+ <li>32-bit x86 assembler (386+), size-optimised [<code>src/small</code>]</li>
+ <li>16-bit x86 assembler (8086+) [<code>16bit/src/</code>]</li>
+</ul>
+
+<p>All 32-bit x86 assembler functions preserve the <code>ebx</code>,
+<code>esi</code>, <code>edi</code>, and <code>ebp</code> registers across
+calls.</p>
+
+<p>All 16-bit x86 assembler functions preserve <code>bx</code>,
+<code>si</code>, <code>di</code>, <code>bp</code> and the segment registers
+across calls.</p>
+
+<p>Except for the supplied dynamic link library (dll), all functions use the
+C calling convention.</p>
+
+<p>The assembler source code is NASM-style (I used NASM 0.98.38, but earlier
+versions should work fine if the cpu directive is removed). NASM is a fast,
+free, and portable assembler for the x86 platform, available at:
+<a href="http://sourceforge.net/projects/nasm/">http://sourceforge.net/projects/nasm/</a></p>
+
+<p>The 32-bit NASM source code uses the NASM linker compatibility macros
+(nasmlcm) to facilitate compiler/linker independent code.</p>
+
+<p>Makefiles (GNU Make style) for a number of compilers are included.</p>
+
+<p>The compression source contains a constant, <code>BLZ_WORKMEM_SIZE</code>,
+which controls the size of the required workmem. This value can be lowered to
+preserve memory at the cost of compression ratio (the default value is
+1 mb (32-bit) / 32 kb (16-bit)).</p>
+
+<p>Pre-compiled libraries for a number of x86 compilers/linkers are
+included:</p>
+
+<dl class="filelist">
+ <dt>lib/delphi/</dt>
+ <dd>
+  These are object files in OMF format, and should work with Delphi,
+  TMT Pascal, and any other linker supporting 32-bit OMF object files.
+ </dd>
+ <dt>lib/djgpp/</dt>
+ <dd>
+  This library should works with DJGPP and Ada.
+ </dd>
+ <dt>lib/dll/</dt>
+ <dd>
+  The dynamic link library should work with any Win32 compiler/linker
+  supporting dll usage. Unlike the other libraries, all dll functions
+  use the stdcall calling convention.
+ </dd>
+ <dt>lib/vc/</dt>
+ <dd>
+  The Visual C++ library should work with Visual C++, Cygwin, MASM32,
+  MinGW, Watcom C/C++, and any other linker supporting 32-bit MS COFF
+  object files and libraries.
+ </dd>
+ <dt>lib/watcom/</dt>
+ <dd>
+  The Watcom C/C++ library should work with Watcom C/C++, Borland C/C++,
+  Digital Mars C/C++, DOS32, TASM32, VPascal, and any other linker
+  supporting 32-bit OMF object files and libraries.
+ </dd>
+ <dt>16bit/lib/</dt>
+ <dd>
+  This library should work with Borland C/C++, Digital Mars C/C++,
+  Watcom C/C++, and any other linker supporting 16-bit OMF object files
+  and libraries.
+ </dd>
+</dl>
+
+&nbsp;<br />
+
+<div class="botnav">
+ <a href="license.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="index.html">home</a> |
+ <a href="examples.html">next&nbsp;&gt;&gt;</a>
+</div>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+
+</html>
