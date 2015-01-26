@@ -1,7 +1,7 @@
 ;;
 ;; BriefLZ  -  small fast Lempel-Ziv
 ;;
-;; NASM assembler depacker
+;; NASM safe assembler depacker
 ;;
 ;; Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
 ;; All Rights Reserved
@@ -41,22 +41,38 @@ bits 32
 
 section lcmtext
 
-lcmglobal blz_depack,12
+lcmglobal blz_depack_safe,16
 
-lcmexport blz_depack,12
+lcmexport blz_depack_safe,16
 
 ; =============================================================
 
 %macro getbitM 0              ; get next tag-bit into carry
     add    dx, dx
     jnz    short %%stillbitsleft
+
+    sub    ebp, byte 2        ; read two bytes from source
+    jc     .return_error      ;
+
     mov    dx, [esi]
-    lea    esi, [esi + 2]
-    adc    dx, dx
+    add    esi, byte 2
+
+    add    dx, dx
+    inc    dx
   %%stillbitsleft:
 %endmacro
 
 %macro domatchM 1             ; copy a match, ecx = len, param = pos
+    push   ecx
+    mov    ecx, [esp + 4 + .dlen$] ; ecx = dstlen
+    sub    ecx, ebx                ; ecx = num written
+    cmp    %1, ecx
+    pop    ecx
+    ja     .return_error
+
+    sub    ebx, ecx           ; write ecx bytes to destination
+    jc     .return_error      ;
+
     push   esi
     mov    esi, edi
     sub    esi, %1
@@ -69,42 +85,52 @@ lcmexport blz_depack,12
   %%getmore:
     getbitM
     adc    %1, %1
+    jc     .return_error
     getbitM
     jc     short %%getmore
 %endmacro
 
 ; =============================================================
 
-lcmlabel blz_depack,12
-    ; blz_depack(const void *source,
-    ;            void *destination,
-    ;            unsigned int depacked_length);
+lcmlabel blz_depack_safe,16
+    ; blz_depack_safe(const void *source,
+    ;                 unsigned int srclen,
+    ;                 void *destination,
+    ;                 unsigned int depacked_length);
 
-    .len$  equ 3*4 + 4 + 8
-    .dst$  equ 3*4 + 4 + 4
-    .src$  equ 3*4 + 4
+    .dlen$ equ 4*4 + 4 + 12
+    .dst$  equ 4*4 + 4 + 8
+    .slen$ equ 4*4 + 4 + 4
+    .src$  equ 4*4 + 4
 
     push   ebx
+    push   ebp
     push   esi
     push   edi
 
     mov    esi, [esp + .src$]
+    mov    ebp, [esp + .slen$]
     mov    edi, [esp + .dst$]
-    mov    ebx, [esp + .len$]
+    mov    ebx, [esp + .dlen$]
 
     cld
     mov    dx, 8000h          ; initialise tag
 
-    add    ebx, edi           ; ebx = destination + length
-
   .literal:
-    mov    al, [esi]          ; copy literal
+    sub    ebp, byte 1        ; read one byte from source
+    jc     .return_error      ;
+
+    mov    al, [esi]          ; read literal
     inc    esi                ;
-    mov    [edi], al          ;
+
+    sub    ebx, byte 1        ; write one byte to destination
+    jc     .return_error      ;
+
+    mov    [edi], al          ; write literal
     inc    edi                ;
 
-    cmp    edi, ebx           ; are we done?
-    jae    near .donedepacking
+    test   ebx, ebx           ; are we done?
+    jz     .donedepacking
 
   .nexttag:
     getbitM                   ; literal or match?
@@ -117,6 +143,10 @@ lcmlabel blz_depack,12
     add    ecx, byte 2        ; matchlen >= 4, so add 2
 
     shl    eax, 8             ; eax = high part of matchpos
+
+    sub    ebp, byte 1        ; read one byte from source
+    jc     .return_error      ;
+
     mov    al, [esi]          ; add low 8 bits of matchpos
     inc    esi                ;
 
@@ -124,18 +154,25 @@ lcmlabel blz_depack,12
 
     domatchM eax              ; copy match
 
-    cmp    edi, ebx           ; are we done?
-    jb     near .nexttag
+    test   ebx, ebx           ; are we done?
+    jnz    .nexttag
 
   .donedepacking:
     mov    eax, edi           ; return unpacked length in eax
     sub    eax, [esp + .dst$] ;
 
+    jmp    .return_eax
+
+  .return_error:
+    or     eax, byte -1
+
+  .return_eax:
     pop    edi
     pop    esi
+    pop    ebp
     pop    ebx
 
-    lcmret 12
+    lcmret 16
 
 ; =============================================================
 

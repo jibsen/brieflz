@@ -3,7 +3,7 @@
 ;;
 ;; NASM small assembler packer
 ;;
-;; Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+;; Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
 ;; All Rights Reserved
 ;;
 ;; http://www.ibsensoftware.com/

@@ -1,9 +1,9 @@
 ##
 ## BriefLZ  -  small fast Lempel-Ziv
 ##
-## Visual C/C++ makefile (GNU Make)
+## Visual C/C++ MS COFF makefile (GNU Make)
 ##
-## Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+## Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
 ## All Rights Reserved
 ##
 ## http://www.ibsensoftware.com/
@@ -11,7 +11,7 @@
 
 ## --- paths ------------------------------------------------------
 
-srcdir   = ..\..\src\fast
+srcdir   = ..\..\src\small
 
 
 ## --- files ------------------------------------------------------
@@ -32,7 +32,7 @@ all: $(target)
 $(target): $(objects)
 	$(RM) $@
 	ar -frsv $@ $^
-	ranlib $@
+#	ranlib $@
 
 %.obj : $(srcdir)\%.nas
 	nasm -o $@ -f win32 -O3 -i$(srcdir)/ $<

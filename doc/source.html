@@ -43,7 +43,7 @@ across calls.</p>
 <p>Except for the supplied dynamic link library (dll), all functions use the
 C calling convention.</p>
 
-<p>The assembler source code is NASM-style (I used NASM 0.98.38, but earlier
+<p>The assembler source code is NASM-style (I used NASM 0.98.39, but earlier
 versions should work fine if the cpu directive is removed). NASM is a fast,
 free, and portable assembler for the x86 platform, available at:
 <a href="http://sourceforge.net/projects/nasm/">http://sourceforge.net/projects/nasm/</a></p>
@@ -77,15 +77,15 @@ included:</p>
   supporting dll usage. Unlike the other libraries, all dll functions
   use the stdcall calling convention.
  </dd>
- <dt>lib/vc/</dt>
+ <dt>lib/mscoff/</dt>
  <dd>
-  The Visual C++ library should work with Visual C++, Cygwin, MASM32,
+  The MS COFF library should work with Visual C++, Cygwin, MASM32,
   MinGW, Watcom C/C++, and any other linker supporting 32-bit MS COFF
   object files and libraries.
  </dd>
- <dt>lib/watcom/</dt>
+ <dt>lib/omf/</dt>
  <dd>
-  The Watcom C/C++ library should work with Watcom C/C++, Borland C/C++,
+  The OMF library should work with Watcom C/C++, Borland C/C++,
   Digital Mars C/C++, DOS32, TASM32, VPascal, and any other linker
   supporting 32-bit OMF object files and libraries.
  </dd>

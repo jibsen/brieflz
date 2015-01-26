@@ -3,7 +3,7 @@
 //
 // C# wrapper
 //
-// Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+// Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
 // All Rights Reserved
 //
 // http://www.ibsensoftware.com/
@@ -26,6 +26,14 @@ namespace IbsenSoftware.BriefLZ
 		[DllImport("brieflz.dll")]
 		public static extern int blz_depack(
 			[In]  byte[] source,
+			[Out] byte[] destination,
+			      int depacked_length
+		);
+
+		[DllImport("brieflz.dll")]
+		public static extern int blz_depack_safe(
+			[In]  byte[] source,
+			      int srclen,
 			[Out] byte[] destination,
 			      int depacked_length
 		);

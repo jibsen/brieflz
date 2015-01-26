@@ -3,7 +3,7 @@
 ##
 ## main build makefile (GNU Make)
 ##
-## Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+## Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
 ## All Rights Reserved
 ##
 ## http://www.ibsensoftware.com/
@@ -14,7 +14,7 @@
 # make <dir>        - make only dir
 # make <dir>.clean  - clean only dir
 
-subdirs  = delphi djgpp dll vc watcom
+subdirs  = delphi djgpp dll mscoff omf
 csubdirs = $(patsubst %,%.clean,$(subdirs))
 
 .PHONY: all clean $(subdirs) $(csubdirs)

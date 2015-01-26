@@ -1,7 +1,7 @@
 /*
  * blzpack  -  BriefLZ example
  *
- * Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+ * Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
 {
     /* show banner */
     printf("===============================================================================\n"
-           "BriefLZ example                 Copyright (c) 2002-2004 by Joergen Ibsen / Jibz\n"
+           "BriefLZ example                 Copyright (c) 2002-2005 by Joergen Ibsen / Jibz\n"
            "                                                            All Rights Reserved\n\n"
            "                                                  http://www.ibsensoftware.com/\n"
            "===============================================================================\n\n");

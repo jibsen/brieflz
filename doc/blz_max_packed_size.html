@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
   <head>
-    <title>BriefLZ - brieflz.h - blz_workmem_size</title>
+    <title>BriefLZ - brieflz.h - blz_max_packed_size</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <link href="ahob.css" title="A Hint of Blue" rel="stylesheet" type="text/css" />
   </head>
@@ -15,27 +15,26 @@
         <td class="isdesc">
 
 <div class="topnav">
- <a href="blz_depack.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="blz_workmem_size.html">&lt;&lt;&nbsp;prev</a> |
  <a href="reference.html">up</a> |
- <a href="blz_max_packed_size.html">next&nbsp;&gt;&gt;</a>
+ <a href="blz_crc32.html">next&nbsp;&gt;&gt;</a>
 </div>
 
-<div class="title">&lt;brieflz.h&gt; - blz_workmem_size</div>
+<div class="title">&lt;brieflz.h&gt; - blz_max_packed_size</div>
 
 <div class="function">
 
 <pre class="declaration">
-size_t <b>blz_workmem_size</b>( size_t&nbsp;input_size );
+<span class="ctype">size_t</span> <span class="cfunc">blz_max_packed_size</span>( <span class="ctype">size_t</span>&nbsp;<span class="cvar">input_size</span> );
 </pre>
 
  <div class="description">
 
-  <p>Computes the required size of the <code>workmem[]</code> buffer used
-  by <code><a href="blz_pack.html">blz_pack</a></code> for compressing
-  <code>input_size</code> bytes of data.</p>
+  <p>Computes the maximum possible compressed size possible when
+  compressing <code>input_size</code> bytes of incompressible data.</p>
 
-  <p>The default is 1 mb (1024*1024) for the 32-bit version and 32 kb
-  (32*1024) for the 16-bit version.</p>
+  <p>The current code returns
+  <code>(input_size + (input_size / 8) + 64)</code>.</p>
 
   <dl>
    <dt>Parameters:</dt>
@@ -45,7 +44,7 @@ size_t <b>blz_workmem_size</b>( size_t&nbsp;input_size );
    </dd>
    <dt>Returns:</dt>
    <dd>
-    the required size of the work buffer.
+    the maximum possible size of the compressed data.
    </dd>
   </dl>
 
@@ -55,9 +54,9 @@ size_t <b>blz_workmem_size</b>( size_t&nbsp;input_size );
 &nbsp;<br />
 
 <div class="botnav">
- <a href="blz_depack.html">&lt;&lt;&nbsp;prev</a> |
+ <a href="blz_workmem_size.html">&lt;&lt;&nbsp;prev</a> |
  <a href="reference.html">up</a> |
- <a href="blz_max_packed_size.html">next&nbsp;&gt;&gt;</a>
+ <a href="blz_crc32.html">next&nbsp;&gt;&gt;</a>
 </div>
 
         </td>

@@ -3,7 +3,7 @@
  *
  * C packer
  *
- * Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+ * Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
@@ -96,7 +96,7 @@ static unsigned int blz_hash4(const unsigned char *data)
    val = (val*317) + data[1];
    val = (val*317) + data[2];
    val = (val*317) + data[3];
-   return (val & (BLZ_WORKMEM_SIZE/4 - 1));
+   return (val & (BLZ_WORKMEM_SIZE/sizeof(const unsigned char *) - 1));
 }
 
 unsigned int BLZCC blz_workmem_size(unsigned int length)
@@ -117,8 +117,8 @@ unsigned int BLZCC blz_pack(const void *source,
                             void *workmem)
 {
    BLZPACKDATA ud;
-   const unsigned char **lookup = workmem;
-   const unsigned char *backptr = source;
+   const unsigned char **lookup = (const unsigned char **) workmem;
+   const unsigned char *backptr = (const unsigned char *) source;
 
    /* check for length == 0 */
    if (length == 0) return 0;
@@ -126,11 +126,11 @@ unsigned int BLZCC blz_pack(const void *source,
    /* init lookup[] */
    {
       int i;
-      for (i = 0; i < BLZ_WORKMEM_SIZE/4; ++i) lookup[i] = 0;
+      for (i = 0; i < BLZ_WORKMEM_SIZE/sizeof(const unsigned char *); ++i) lookup[i] = 0;
    }
 
-   ud.source = source;
-   ud.destination = destination;
+   ud.source = (const unsigned char *) source;
+   ud.destination = (unsigned char *) destination;
 
    /* first byte verbatim */
    *ud.destination++ = *ud.source++;

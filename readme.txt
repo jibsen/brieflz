@@ -3,9 +3,9 @@
 
 BriefLZ  -  small fast Lempel-Ziv
 
-Version 1.04
+Version 1.05
 
-Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
 All Rights Reserved
 
 http://www.ibsensoftware.com/
@@ -19,7 +19,7 @@ About
  style compression algorithm. The main focus is on speed, but the ratios
  achieved are quite good compared to similar algorithms.
 
- Please read the documentation file 'doc/BriefLZ-1.04.chm' or
+ Please read the documentation file 'doc/BriefLZ-1.05.chm' or
  'doc/html/index.html'.
 
 
@@ -31,7 +31,7 @@ License
 
    BriefLZ  -  small fast Lempel-Ziv
 
-   Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+   Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
    All Rights Reserved
 
    http://www.ibsensoftware.com/

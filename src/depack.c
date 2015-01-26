@@ -3,7 +3,7 @@
  *
  * C depacker
  *
- * Copyright (c) 2002-2004 by Joergen Ibsen / Jibz
+ * Copyright (c) 2002-2005 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
@@ -85,8 +85,8 @@ unsigned int BLZCC blz_depack(const void *source,
    /* check for length == 0 */
    if (depacked_length == 0) return 0;
 
-   ud.source = source;
-   ud.destination = destination;
+   ud.source = (const unsigned char *) source;
+   ud.destination = (unsigned char *) destination;
    ud.bitcount = 0;
 
    /* first byte verbatim */
@@ -97,27 +97,27 @@ unsigned int BLZCC blz_depack(const void *source,
    {
       if (blz_getbit(&ud))
       {
-	 /* input match length and position */
-	 unsigned int len = blz_getgamma(&ud) + 2;
-	 unsigned int pos = blz_getgamma(&ud) - 2;
+     /* input match length and position */
+     unsigned int len = blz_getgamma(&ud) + 2;
+     unsigned int pos = blz_getgamma(&ud) - 2;
 
-	 pos = (pos << 8) + *ud.source++ + 1;
+     pos = (pos << 8) + *ud.source++ + 1;
 
-	 /* copy match */
-	 {
-	    const unsigned char *ppos = ud.destination - pos;
-	    int i;
-	    for (i = len; i > 0; --i) *ud.destination++ = *ppos++;
-	 }
+     /* copy match */
+     {
+        const unsigned char *ppos = ud.destination - pos;
+        int i;
+        for (i = len; i > 0; --i) *ud.destination++ = *ppos++;
+     }
 
-	 length += len;
+     length += len;
 
       } else {
 
-	 /* copy literal */
-	 *ud.destination++ = *ud.source++;
+     /* copy literal */
+     *ud.destination++ = *ud.source++;
 
-	 length++;
+     length++;
       }
    }
 

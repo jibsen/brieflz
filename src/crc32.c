@@ -3,7 +3,7 @@
  *
  * C crc32
  *
- * Copyright (c) 1998-2004 by Joergen Ibsen / Jibz
+ * Copyright (c) 1998-2005 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
@@ -51,7 +51,7 @@ unsigned int BLZCC blz_crc32(const void *source,
                              unsigned int length,
                              unsigned int initial_crc32)
 {
-   const unsigned char *buf = (const unsigned char *)source;
+   const unsigned char *buf = (const unsigned char *) source;
    unsigned int crc = initial_crc32 ^ 0xffffffffu;
    unsigned int i;
 
