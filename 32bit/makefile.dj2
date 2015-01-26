@@ -1,0 +1,32 @@
+##
+## blzpack  -  BriefLZ example
+##
+## DJGPP makefile
+##
+## Copyright (c) 2002-2003 by Joergen Ibsen / Jibz
+## All Rights Reserved
+##
+## http://www.ibsensoftware.com/
+##
+
+target  = blzpack.exe
+objects = blzpack.o brieflz.o depack.o crc32.o
+
+cflags  = -s -Wall -O3
+ldflags = $(cflags)
+
+.PHONY: all clean
+
+all: $(target)
+
+$(target): $(objects)
+	gpp $(ldflags) -o $@ $^
+
+%.o : %.c
+	gpp $(cflags) -c $<
+
+%.o : %.nas
+	nasm -o $@ -f coff -O3 $<
+
+clean:
+	$(RM) $(objects) $(target)
