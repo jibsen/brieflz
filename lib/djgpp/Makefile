@@ -33,7 +33,7 @@ srcdir   = ..\..\src\fast
 ## --- files ------------------------------------------------------
 
 target   = brieflz.a
-objects  = brieflz.o crc32.o depack.o
+objects  = brieflz.o depack.o
 
 
 ## --- flags ------------------------------------------------------

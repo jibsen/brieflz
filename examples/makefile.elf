@@ -26,7 +26,7 @@
 ##
 
 target  = blzpack
-objects = blzpack.o brieflz.o crc32.o depack.o
+objects = blzpack.o brieflz.o depack.o
 
 cflags   = -s -Wall -Wextra -ansi -pedantic -O2 -I../include
 ldflags  = $(cflags)

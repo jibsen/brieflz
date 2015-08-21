@@ -4,4 +4,3 @@ EXPORTS   _blz_pack@16
           _blz_depack@12
           _blz_workmem_size@4
           _blz_max_packed_size@4
-          _blz_crc32@12

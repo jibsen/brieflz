@@ -103,17 +103,6 @@ unsigned int BLZCC blz_workmem_size(unsigned int length);
 unsigned int BLZCC blz_max_packed_size(unsigned int length);
 
 
-/**
- * Compute the CRC32 of a buffer.
- * @param source - pointer to the data.
- * @param length - the number of bytes to process.
- * @param initial_crc32 - the current CRC32 value (pass 0 for first block).
- * @return the CRC32 of the data.
- */
-unsigned int BLZCC blz_crc32(const void *source,
-                             unsigned int length,
-                             unsigned int initial_crc32);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

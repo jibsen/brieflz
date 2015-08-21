@@ -63,7 +63,6 @@ unsigned int BLZCC blz_pack(const void *source,
                             unsigned int length,
                             void *workmem);
 
-
 /**
  * Decompress data.
  * @param source - pointer to the compressed data.
@@ -75,7 +74,6 @@ DllSpec
 unsigned int BLZCC blz_depack(const void *source,
                               void *destination,
                               unsigned int depacked_length);
-
 
 /**
  * Decompress data safely.
@@ -93,7 +91,6 @@ unsigned int BLZCC blz_depack_safe(const void *source,
                                    void *destination,
                                    unsigned int depacked_length);
 
-
 /**
  * Get the required size of the workmem buffer.
  * @param length - the length in bytes of the data.
@@ -101,7 +98,6 @@ unsigned int BLZCC blz_depack_safe(const void *source,
  */
 DllSpec
 unsigned int BLZCC blz_workmem_size(unsigned int length);
-
 
 /**
  * Get the maximum output size produced on uncompressible data.
@@ -111,18 +107,6 @@ unsigned int BLZCC blz_workmem_size(unsigned int length);
 DllSpec
 unsigned int BLZCC blz_max_packed_size(unsigned int length);
 
-
-/**
- * Compute the CRC32 of a buffer.
- * @param source - pointer to the data.
- * @param length - the number of bytes to process.
- * @param initial_crc32 - the current CRC32 value (pass 0 for first block).
- * @return the CRC32 of the data.
- */
-DllSpec
-unsigned int BLZCC blz_crc32(const void *source,
-                             unsigned int length,
-                             unsigned int initial_crc32);
 
 #ifdef __cplusplus
 } /* extern "C" */

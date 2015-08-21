@@ -33,7 +33,7 @@ srcdir   = ..\..\src\small
 ## --- files ------------------------------------------------------
 
 target   = brieflz.lib
-objects  = brieflz.obj crc32.obj depack.obj
+objects  = brieflz.obj depack.obj
 
 
 ## --- flags ------------------------------------------------------

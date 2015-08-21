@@ -33,7 +33,7 @@ srcdir   = ..\..\src\fast
 ## --- files ------------------------------------------------------
 
 target   = brieflz.dll
-objects  = brieflz.obj crc32.obj depack.obj
+objects  = brieflz.obj depack.obj
 
 temps    = brieflz.lib brieflz.exp
 
