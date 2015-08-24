@@ -28,7 +28,7 @@
 #include "brieflz.h"
 
 /* internal data structure */
-struct BLZDEPACKDATA {
+struct blz_state {
 	const unsigned char *source;
 	unsigned char *destination;
 	unsigned int srclen;
@@ -38,26 +38,26 @@ struct BLZDEPACKDATA {
 };
 
 static int
-blz_getbit_safe(struct BLZDEPACKDATA *ud, unsigned int *result)
+blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 {
 	unsigned int bit;
 
 	/* check if tag is empty */
-	if (!ud->bitcount--) {
-		if (ud->srclen < 2) {
+	if (!bs->bitcount--) {
+		if (bs->srclen < 2) {
 			return 0;
 		}
-		ud->srclen -= 2;
+		bs->srclen -= 2;
 
 		/* load next tag */
-		ud->tag = ud->source[0] + ((unsigned int) ud->source[1] << 8);
-		ud->source += 2;
-		ud->bitcount = 15;
+		bs->tag = bs->source[0] + ((unsigned int) bs->source[1] << 8);
+		bs->source += 2;
+		bs->bitcount = 15;
 	}
 
 	/* shift bit out of tag */
-	bit = (ud->tag >> 15) & 0x01;
-	ud->tag <<= 1;
+	bit = (bs->tag >> 15) & 0x01;
+	bs->tag <<= 1;
 
 	*result = bit;
 
@@ -65,20 +65,20 @@ blz_getbit_safe(struct BLZDEPACKDATA *ud, unsigned int *result)
 }
 
 static int
-blz_getgamma_safe(struct BLZDEPACKDATA *ud, unsigned int *result)
+blz_getgamma_safe(struct blz_state *bs, unsigned int *result)
 {
 	unsigned int bit;
 	unsigned int v = 1;
 
 	/* input gamma2-encoded bits */
 	do {
-		if (!blz_getbit_safe(ud, &bit)) {
+		if (!blz_getbit_safe(bs, &bit)) {
 			return 0;
 		}
 
 		v = (v << 1) + bit;
 
-		if (!blz_getbit_safe(ud, &bit)) {
+		if (!blz_getbit_safe(bs, &bit)) {
 			return 0;
 		}
 	} while (bit);
@@ -92,7 +92,7 @@ unsigned int
 blz_depack_safe(const void *source, unsigned int srclen,
                 void *destination, unsigned int depacked_length)
 {
-	struct BLZDEPACKDATA ud;
+	struct blz_state bs;
 	unsigned int length = 1;
 	unsigned int bit;
 
@@ -101,21 +101,21 @@ blz_depack_safe(const void *source, unsigned int srclen,
 		return 0;
 	}
 
-	ud.source = (const unsigned char *) source;
-	ud.srclen = srclen;
-	ud.destination = (unsigned char *) destination;
-	ud.dstlen = depacked_length;
-	ud.bitcount = 0;
+	bs.source = (const unsigned char *) source;
+	bs.srclen = srclen;
+	bs.destination = (unsigned char *) destination;
+	bs.dstlen = depacked_length;
+	bs.bitcount = 0;
 
 	/* first byte verbatim */
-	if (!ud.srclen-- || !ud.dstlen--) {
+	if (!bs.srclen-- || !bs.dstlen--) {
 		return BLZ_ERROR;
 	}
-	*ud.destination++ = *ud.source++;
+	*bs.destination++ = *bs.source++;
 
 	/* main decompression loop */
 	while (length < depacked_length) {
-		if (!blz_getbit_safe(&ud, &bit)) {
+		if (!blz_getbit_safe(&bs, &bit)) {
 			return BLZ_ERROR;
 		}
 
@@ -123,38 +123,38 @@ blz_depack_safe(const void *source, unsigned int srclen,
 			unsigned int len, pos;
 
 			/* input match length and position */
-			if (!blz_getgamma_safe(&ud, &len)) {
+			if (!blz_getgamma_safe(&bs, &len)) {
 				return BLZ_ERROR;
 			}
-			if (!blz_getgamma_safe(&ud, &pos)) {
+			if (!blz_getgamma_safe(&bs, &pos)) {
 				return BLZ_ERROR;
 			}
 
 			len += 2;
 			pos -= 2;
 
-			if (!ud.srclen--) {
+			if (!bs.srclen--) {
 				return BLZ_ERROR;
 			}
 
-			pos = (pos << 8) + *ud.source++ + 1;
+			pos = (pos << 8) + *bs.source++ + 1;
 
-			if (pos > (depacked_length - ud.dstlen)) {
+			if (pos > (depacked_length - bs.dstlen)) {
 				return BLZ_ERROR;
 			}
 
-			if (len > ud.dstlen) {
+			if (len > bs.dstlen) {
 				return BLZ_ERROR;
 			}
 
-			ud.dstlen -= len;
+			bs.dstlen -= len;
 
 			/* copy match */
 			{
-				const unsigned char *ppos = ud.destination - pos;
+				const unsigned char *ppos = bs.destination - pos;
 				int i;
 				for (i = len; i > 0; --i) {
-					*ud.destination++ = *ppos++;
+					*bs.destination++ = *ppos++;
 				}
 			}
 
@@ -162,10 +162,10 @@ blz_depack_safe(const void *source, unsigned int srclen,
 		}
 		else {
 			/* copy literal */
-			if (!ud.srclen-- || !ud.dstlen--) {
+			if (!bs.srclen-- || !bs.dstlen--) {
 				return BLZ_ERROR;
 			}
-			*ud.destination++ = *ud.source++;
+			*bs.destination++ = *bs.source++;
 
 			length++;
 		}

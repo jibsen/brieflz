@@ -28,7 +28,7 @@
 #include "brieflz.h"
 
 /* internal data structure */
-struct BLZDEPACKDATA {
+struct blz_state {
 	const unsigned char *source;
 	unsigned char *destination;
 	unsigned int tag;
@@ -36,34 +36,34 @@ struct BLZDEPACKDATA {
 };
 
 static int
-blz_getbit(struct BLZDEPACKDATA *ud)
+blz_getbit(struct blz_state *bs)
 {
 	unsigned int bit;
 
 	/* check if tag is empty */
-	if (!ud->bitcount--) {
+	if (!bs->bitcount--) {
 		/* load next tag */
-		ud->tag = ud->source[0] + ((unsigned int) ud->source[1] << 8);
-		ud->source += 2;
-		ud->bitcount = 15;
+		bs->tag = bs->source[0] + ((unsigned int) bs->source[1] << 8);
+		bs->source += 2;
+		bs->bitcount = 15;
 	}
 
 	/* shift bit out of tag */
-	bit = (ud->tag >> 15) & 0x01;
-	ud->tag <<= 1;
+	bit = (bs->tag >> 15) & 0x01;
+	bs->tag <<= 1;
 
 	return bit;
 }
 
 static unsigned int
-blz_getgamma(struct BLZDEPACKDATA *ud)
+blz_getgamma(struct blz_state *bs)
 {
 	unsigned int result = 1;
 
 	/* input gamma2-encoded bits */
 	do {
-		result = (result << 1) + blz_getbit(ud);
-	} while (blz_getbit(ud));
+		result = (result << 1) + blz_getbit(bs);
+	} while (blz_getbit(bs));
 
 	return result;
 }
@@ -71,7 +71,7 @@ blz_getgamma(struct BLZDEPACKDATA *ud)
 unsigned int
 blz_depack(const void *source, void *destination, unsigned int depacked_length)
 {
-	struct BLZDEPACKDATA ud;
+	struct blz_state bs;
 	unsigned int length = 1;
 
 	/* check for length == 0 */
@@ -79,28 +79,28 @@ blz_depack(const void *source, void *destination, unsigned int depacked_length)
 		return 0;
 	}
 
-	ud.source = (const unsigned char *) source;
-	ud.destination = (unsigned char *) destination;
-	ud.bitcount = 0;
+	bs.source = (const unsigned char *) source;
+	bs.destination = (unsigned char *) destination;
+	bs.bitcount = 0;
 
 	/* first byte verbatim */
-	*ud.destination++ = *ud.source++;
+	*bs.destination++ = *bs.source++;
 
 	/* main decompression loop */
 	while (length < depacked_length) {
-		if (blz_getbit(&ud)) {
+		if (blz_getbit(&bs)) {
 			/* input match length and position */
-			unsigned int len = blz_getgamma(&ud) + 2;
-			unsigned int pos = blz_getgamma(&ud) - 2;
+			unsigned int len = blz_getgamma(&bs) + 2;
+			unsigned int pos = blz_getgamma(&bs) - 2;
 
-			pos = (pos << 8) + *ud.source++ + 1;
+			pos = (pos << 8) + *bs.source++ + 1;
 
 			/* copy match */
 			{
-				const unsigned char *ppos = ud.destination - pos;
+				const unsigned char *ppos = bs.destination - pos;
 				int i;
 				for (i = len; i > 0; --i) {
-					*ud.destination++ = *ppos++;
+					*bs.destination++ = *ppos++;
 				}
 			}
 
@@ -108,7 +108,7 @@ blz_depack(const void *source, void *destination, unsigned int depacked_length)
 		}
 		else {
 			/* copy literal */
-			*ud.destination++ = *ud.source++;
+			*bs.destination++ = *bs.source++;
 
 			length++;
 		}

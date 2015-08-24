@@ -35,7 +35,7 @@
 #endif
 
 /* internal data structure */
-struct BLZPACKDATA {
+struct blz_state {
 	const unsigned char *source;
 	unsigned char *destination;
 	unsigned char *tagpos;
@@ -44,26 +44,26 @@ struct BLZPACKDATA {
 };
 
 static void
-blz_putbit(struct BLZPACKDATA *ud, const int bit)
+blz_putbit(struct blz_state *bs, const int bit)
 {
 	/* check if tag is full */
-	if (!ud->bitcount--) {
+	if (!bs->bitcount--) {
 		/* store tag */
-		ud->tagpos[0] = ud->tag & 0x00ff;
-		ud->tagpos[1] = (ud->tag >> 8) & 0x00ff;
+		bs->tagpos[0] = bs->tag & 0x00ff;
+		bs->tagpos[1] = (bs->tag >> 8) & 0x00ff;
 
 		/* init next tag */
-		ud->tagpos = ud->destination;
-		ud->destination += 2;
-		ud->bitcount = 15;
+		bs->tagpos = bs->destination;
+		bs->destination += 2;
+		bs->bitcount = 15;
 	}
 
 	/* shift bit into tag */
-	ud->tag = (ud->tag << 1) + (bit ? 1 : 0);
+	bs->tag = (bs->tag << 1) + (bit ? 1 : 0);
 }
 
 static void
-blz_putgamma(struct BLZPACKDATA *ud, unsigned int val)
+blz_putgamma(struct blz_state *bs, unsigned int val)
 {
 	unsigned int mask = val >> 1;
 
@@ -73,14 +73,14 @@ blz_putgamma(struct BLZPACKDATA *ud, unsigned int val)
 	}
 
 	/* output gamma2-encoded bits */
-	blz_putbit(ud, val & mask);
+	blz_putbit(bs, val & mask);
 
 	while (mask >>= 1) {
-		blz_putbit(ud, 1);
-		blz_putbit(ud, val & mask);
+		blz_putbit(bs, 1);
+		blz_putbit(bs, val & mask);
 	}
 
-	blz_putbit(ud, 0);
+	blz_putbit(bs, 0);
 }
 
 static unsigned int
@@ -113,7 +113,7 @@ blz_max_packed_size(unsigned int length)
 unsigned int
 blz_pack(const void *source, void *destination, unsigned int length, void *workmem)
 {
-	struct BLZPACKDATA ud;
+	struct blz_state bs;
 	const unsigned char **lookup = (const unsigned char **) workmem;
 	const unsigned char *backptr = (const unsigned char *) source;
 
@@ -130,11 +130,11 @@ blz_pack(const void *source, void *destination, unsigned int length, void *workm
 		}
 	}
 
-	ud.source = (const unsigned char *) source;
-	ud.destination = (unsigned char *) destination;
+	bs.source = (const unsigned char *) source;
+	bs.destination = (unsigned char *) destination;
 
 	/* first byte verbatim */
-	*ud.destination++ = *ud.source++;
+	*bs.destination++ = *bs.source++;
 
 	/* check for length == 1 */
 	if (--length == 0) {
@@ -142,10 +142,10 @@ blz_pack(const void *source, void *destination, unsigned int length, void *workm
 	}
 
 	/* init first tag */
-	ud.tagpos = ud.destination;
-	ud.destination += 2;
-	ud.tag = 0;
-	ud.bitcount = 16;
+	bs.tagpos = bs.destination;
+	bs.destination += 2;
+	bs.tag = 0;
+	bs.bitcount = 16;
 
 	/* main compression loop */
 	while (length > 4) {
@@ -153,44 +153,44 @@ blz_pack(const void *source, void *destination, unsigned int length, void *workm
 		unsigned int len = 0;
 
 		/* update lookup[] up to current position */
-		while (backptr < ud.source) {
+		while (backptr < bs.source) {
 			lookup[blz_hash4(backptr)] = backptr;
 			backptr++;
 		}
 
 		/* look up current position */
-		ppos = lookup[blz_hash4(ud.source)];
+		ppos = lookup[blz_hash4(bs.source)];
 
 		/* check match */
 		if (ppos) {
-			while ((len < length) && (*(ppos + len) == *(ud.source + len))) {
+			while ((len < length) && (*(ppos + len) == *(bs.source + len))) {
 				++len;
 			}
 		}
 
 		/* output match or literal */
 		if (len > 3) {
-			unsigned int pos = (unsigned int) (ud.source - ppos - 1);
+			unsigned int pos = (unsigned int) (bs.source - ppos - 1);
 
 			/* output match tag */
-			blz_putbit(&ud, 1);
+			blz_putbit(&bs, 1);
 
 			/* output length */
-			blz_putgamma(&ud, len - 2);
+			blz_putgamma(&bs, len - 2);
 
 			/* output position */
-			blz_putgamma(&ud, (pos >> 8) + 2);
-			*ud.destination++ = pos & 0x00ff;
+			blz_putgamma(&bs, (pos >> 8) + 2);
+			*bs.destination++ = pos & 0x00ff;
 
-			ud.source += len;
+			bs.source += len;
 			length -= len;
 		}
 		else {
 			/* output literal tag */
-			blz_putbit(&ud, 0);
+			blz_putbit(&bs, 0);
 
 			/* copy literal */
-			*ud.destination++ = *ud.source++;
+			*bs.destination++ = *bs.source++;
 			length--;
 		}
 	}
@@ -198,18 +198,18 @@ blz_pack(const void *source, void *destination, unsigned int length, void *workm
 	/* output any remaining literals */
 	while (length > 0) {
 		/* output literal tag */
-		blz_putbit(&ud, 0);
+		blz_putbit(&bs, 0);
 
 		/* copy literal */
-		*ud.destination++ = *ud.source++;
+		*bs.destination++ = *bs.source++;
 		length--;
 	}
 
 	/* shift last tag into position and store */
-	ud.tag <<= ud.bitcount;
-	ud.tagpos[0] = ud.tag & 0x00ff;
-	ud.tagpos[1] = (ud.tag >> 8) & 0x00ff;
+	bs.tag <<= bs.bitcount;
+	bs.tagpos[0] = bs.tag & 0x00ff;
+	bs.tagpos[1] = (bs.tag >> 8) & 0x00ff;
 
 	/* return compressed length */
-	return (unsigned int) (ud.destination - (unsigned char *) destination);
+	return (unsigned int) (bs.destination - (unsigned char *) destination);
 }
