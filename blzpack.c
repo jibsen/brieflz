@@ -73,9 +73,9 @@ typedef unsigned char byte;
  * Get the low-order 8 bits of a value.
  */
 #if CHAR_BIT == 8
-# define octet(v) ((byte) (v))
+#  define octet(v) ((byte) (v))
 #else
-# define octet(v) ((v) & 0x00ffu)
+#  define octet(v) ((v) & 0x00ffu)
 #endif
 
 /*
@@ -90,8 +90,8 @@ static const unsigned long blz_crctab_n[16] = {
 	0xbdbdf21cul
 };
 
-static unsigned long blz_crc32(const void *source, unsigned int length,
-                               unsigned long initial_crc32)
+static unsigned long
+blz_crc32(const void *source, unsigned int length, unsigned long initial_crc32)
 {
 	const unsigned char *buf = (const unsigned char *) source;
 	unsigned long crc = initial_crc32 ^ 0xfffffffful;
@@ -113,7 +113,8 @@ static unsigned long blz_crc32(const void *source, unsigned int length,
 /*
  * Store a 32-bit unsigned value in network order.
  */
-static void put_uint32(byte *p, unsigned long val)
+static void
+put_uint32(byte *p, unsigned long val)
 {
 	p[0] = octet(val >> 24);
 	p[1] = octet(val >> 16);
@@ -124,18 +125,20 @@ static void put_uint32(byte *p, unsigned long val)
 /*
  * Read a 32-bit unsigned value in network order.
  */
-static unsigned long get_uint32(const byte *p)
+static unsigned long
+get_uint32(const byte *p)
 {
 	return ((unsigned long) octet(p[0]) << 24)
-	       | ((unsigned long) octet(p[1]) << 16)
-	       | ((unsigned long) octet(p[2]) << 8)
-	       | ((unsigned long) octet(p[3]));
+	     | ((unsigned long) octet(p[1]) << 16)
+	     | ((unsigned long) octet(p[2]) << 8)
+	     | ((unsigned long) octet(p[3]));
 }
 
 /*
  * Compute ratio between two numbers.
  */
-unsigned int ratio(unsigned long x, unsigned long y)
+unsigned int
+ratio(unsigned long x, unsigned long y)
 {
 	if (x <= ULONG_MAX / 100) {
 		x *= 100;
@@ -154,7 +157,8 @@ unsigned int ratio(unsigned long x, unsigned long y)
 /*
  * Compress a file.
  */
-int compress_file(const char *oldname, const char *packedname)
+int
+compress_file(const char *oldname, const char *packedname)
 {
 	byte header[HEADER_SIZE] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
 	FILE *oldfile;
@@ -168,8 +172,8 @@ int compress_file(const char *oldname, const char *packedname)
 
 	/* allocate memory */
 	if ((data = (byte *) malloc(BLOCK_SIZE)) == NULL
-	    || (packed = (byte *) malloc(blz_max_packed_size(BLOCK_SIZE))) == NULL
-	    || (workmem = (byte *) malloc(blz_workmem_size(BLOCK_SIZE))) == NULL) {
+	 || (packed = (byte *) malloc(blz_max_packed_size(BLOCK_SIZE))) == NULL
+	 || (workmem = (byte *) malloc(blz_workmem_size(BLOCK_SIZE))) == NULL) {
 		printf("ERR: not enough memory\n");
 		return 1;
 	}
@@ -242,7 +246,8 @@ int compress_file(const char *oldname, const char *packedname)
 /*
  * Decompress a file.
  */
-int decompress_file(const char *packedname, const char *newname)
+int
+decompress_file(const char *packedname, const char *newname)
 {
 	byte header[HEADER_SIZE];
 	FILE *newfile;
@@ -258,7 +263,7 @@ int decompress_file(const char *packedname, const char *newname)
 
 	/* allocate memory */
 	if ((data = (byte *) malloc(BLOCK_SIZE)) == NULL
-	    || (packed = (byte *) malloc(max_packed_size)) == NULL) {
+	 || (packed = (byte *) malloc(max_packed_size)) == NULL) {
 		printf("ERR: not enough memory\n");
 		return 1;
 	}
@@ -287,9 +292,9 @@ int decompress_file(const char *packedname, const char *newname)
 
 		/* verify values in header */
 		if (get_uint32(header + 0 * 4) != 0x626C7A1Aul /* "blz\x1A" */
-		    || get_uint32(header + 1 * 4) != 1
-		    || get_uint32(header + 2 * 4) > max_packed_size
-		    || get_uint32(header + 4 * 4) > BLOCK_SIZE) {
+		 || get_uint32(header + 1 * 4) != 1
+		 || get_uint32(header + 2 * 4) > max_packed_size
+		 || get_uint32(header + 4 * 4) > BLOCK_SIZE) {
 			printf("ERR: invalid header in compressed file\n");
 			return 1;
 		}
@@ -354,7 +359,8 @@ int decompress_file(const char *packedname, const char *newname)
 /*
  * Show program syntax.
  */
-void show_syntax(void)
+void
+show_syntax(void)
 {
 	printf("Licensed under the zlib license.\n\n"
 	       "  Syntax:\n\n"
@@ -365,7 +371,8 @@ void show_syntax(void)
 /*
  * Main.
  */
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 	/* show banner */
 	printf("BriefLZ example\n"

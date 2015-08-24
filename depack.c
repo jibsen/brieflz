@@ -35,7 +35,8 @@ struct BLZDEPACKDATA {
 	unsigned int bitcount;
 };
 
-static int blz_getbit(struct BLZDEPACKDATA *ud)
+static int
+blz_getbit(struct BLZDEPACKDATA *ud)
 {
 	unsigned int bit;
 
@@ -54,7 +55,8 @@ static int blz_getbit(struct BLZDEPACKDATA *ud)
 	return bit;
 }
 
-static unsigned int blz_getgamma(struct BLZDEPACKDATA *ud)
+static unsigned int
+blz_getgamma(struct BLZDEPACKDATA *ud)
 {
 	unsigned int result = 1;
 
@@ -66,9 +68,8 @@ static unsigned int blz_getgamma(struct BLZDEPACKDATA *ud)
 	return result;
 }
 
-unsigned int BLZCC blz_depack(const void *source,
-                              void *destination,
-                              unsigned int depacked_length)
+unsigned int
+blz_depack(const void *source, void *destination, unsigned int depacked_length)
 {
 	struct BLZDEPACKDATA ud;
 	unsigned int length = 1;

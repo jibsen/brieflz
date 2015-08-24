@@ -28,22 +28,51 @@
 #ifndef BRIEFLZ_H_INCLUDED
 #define BRIEFLZ_H_INCLUDED
 
-/* calling convention */
-#ifndef BLZCC
-# ifdef __WATCOMC__
-#  define BLZCC __cdecl
-# else
-#  define BLZCC
-# endif
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef BLZ_ERROR
-# define BLZ_ERROR (-1)
+#ifdef BLZ_DLL
+#  if defined(_WIN32) || defined(__CYGWIN__)
+#    ifdef BLZ_DLL_EXPORTS
+#      define BLZ_API __declspec(dllexport)
+#    else
+#      define BLZ_API __declspec(dllimport)
+#    endif
+#    define BLZ_LOCAL
+#  else
+#    if __GNUC__ >= 4
+#      define BLZ_API __attribute__ ((visibility ("default")))
+#      define BLZ_LOCAL __attribute__ ((visibility ("hidden")))
+#    else
+#      define BLZ_API
+#      define BLZ_LOCAL
+#    endif
+#  endif
+#else
+#  define BLZ_API
+#  define BLZ_LOCAL
 #endif
+
+#ifndef BLZ_ERROR
+#  define BLZ_ERROR (-1)
+#endif
+
+/**
+ * Get the required size of the workmem buffer.
+ * @param length - the length in bytes of the data.
+ * @return required size in bytes of the workmem buffer.
+ */
+BLZ_API unsigned int
+blz_workmem_size(unsigned int length);
+
+/**
+ * Get the maximum output size produced on uncompressible data.
+ * @param length - the length in bytes of the data.
+ * @return maximum required size in bytes of the output buffer.
+ */
+BLZ_API unsigned int
+blz_max_packed_size(unsigned int length);
 
 /**
  * Compress data.
@@ -53,11 +82,8 @@ extern "C" {
  * @param workmem - pointer to memory for temporary use.
  * @return the length of the compressed data.
  */
-unsigned int BLZCC blz_pack(const void *source,
-                            void *destination,
-                            unsigned int length,
-                            void *workmem);
-
+BLZ_API unsigned int
+blz_pack(const void *source, void *destination, unsigned int length, void *workmem);
 
 /**
  * Decompress data.
@@ -66,10 +92,8 @@ unsigned int BLZCC blz_pack(const void *source,
  * @param depacked_length - the length of the decompressed data.
  * @return the length of the decompressed data.
  */
-unsigned int BLZCC blz_depack(const void *source,
-                              void *destination,
-                              unsigned int depacked_length);
-
+BLZ_API unsigned int
+blz_depack(const void *source, void *destination, unsigned int depacked_length);
 
 /**
  * Decompress data safely.
@@ -81,27 +105,9 @@ unsigned int BLZCC blz_depack(const void *source,
  * @note This functions reads at most srclen bytes from source[], and
  * writes at most depacked_length bytes to destination[].
  */
-unsigned int BLZCC blz_depack_safe(const void *source,
-                                   unsigned int srclen,
-                                   void *destination,
-                                   unsigned int depacked_length);
-
-
-/**
- * Get the required size of the workmem buffer.
- * @param length - the length in bytes of the data.
- * @return required size in bytes of the workmem buffer.
- */
-unsigned int BLZCC blz_workmem_size(unsigned int length);
-
-
-/**
- * Get the maximum output size produced on uncompressible data.
- * @param length - the length in bytes of the data.
- * @return maximum required size in bytes of the output buffer.
- */
-unsigned int BLZCC blz_max_packed_size(unsigned int length);
-
+BLZ_API unsigned int
+blz_depack_safe(const void *source, unsigned int srclen,
+                void *destination, unsigned int depacked_length);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -43,7 +43,8 @@ struct BLZPACKDATA {
 	unsigned int bitcount;
 };
 
-static void blz_putbit(struct BLZPACKDATA *ud, const int bit)
+static void
+blz_putbit(struct BLZPACKDATA *ud, const int bit)
 {
 	/* check if tag is full */
 	if (!ud->bitcount--) {
@@ -61,7 +62,8 @@ static void blz_putbit(struct BLZPACKDATA *ud, const int bit)
 	ud->tag = (ud->tag << 1) + (bit ? 1 : 0);
 }
 
-static void blz_putgamma(struct BLZPACKDATA *ud, unsigned int val)
+static void
+blz_putgamma(struct BLZPACKDATA *ud, unsigned int val)
 {
 	unsigned int mask = val >> 1;
 
@@ -81,7 +83,8 @@ static void blz_putgamma(struct BLZPACKDATA *ud, unsigned int val)
 	blz_putbit(ud, 0);
 }
 
-static unsigned int blz_hash4(const unsigned char *data)
+static unsigned int
+blz_hash4(const unsigned char *data)
 {
 	/* hash next four bytes of data[] */
 	unsigned int val = data[0];
@@ -91,7 +94,8 @@ static unsigned int blz_hash4(const unsigned char *data)
 	return val & (BLZ_WORKMEM_SIZE / sizeof(const unsigned char *) - 1);
 }
 
-unsigned int BLZCC blz_workmem_size(unsigned int length)
+unsigned int
+blz_workmem_size(unsigned int length)
 {
 	(void) length;
 
@@ -99,16 +103,15 @@ unsigned int BLZCC blz_workmem_size(unsigned int length)
 	return BLZ_WORKMEM_SIZE;
 }
 
-unsigned int BLZCC blz_max_packed_size(unsigned int length)
+unsigned int
+blz_max_packed_size(unsigned int length)
 {
 	/* return max compressed size */
 	return length + length / 8 + 64;
 }
 
-unsigned int BLZCC blz_pack(const void *source,
-                            void *destination,
-                            unsigned int length,
-                            void *workmem)
+unsigned int
+blz_pack(const void *source, void *destination, unsigned int length, void *workmem)
 {
 	struct BLZPACKDATA ud;
 	const unsigned char **lookup = (const unsigned char **) workmem;
@@ -121,7 +124,7 @@ unsigned int BLZCC blz_pack(const void *source,
 
 	/* init lookup[] */
 	{
-		int i;
+		unsigned int i;
 		for (i = 0; i < BLZ_WORKMEM_SIZE / sizeof(const unsigned char *); ++i) {
 			lookup[i] = 0;
 		}
