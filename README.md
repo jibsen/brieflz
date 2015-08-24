@@ -16,7 +16,15 @@ BriefLZ is a small and fast open source implementation of a Lempel-Ziv
 style compression algorithm. The main focus is on speed, but the ratios
 achieved are quite good compared to similar algorithms.
 
-Please read the documentation for more information.
+
+Usage
+-----
+
+The include file `brieflz.h` contains documentation in the form of [doxygen][]
+comments. A configuration file is included, so you can simply run `doxygen`
+to generate documentation in HTML format.
+
+[doxygen]: http://www.doxygen.org/
 
 
 License
