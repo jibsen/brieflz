@@ -55,7 +55,7 @@ extern "C" {
 #endif
 
 #ifndef BLZ_ERROR
-#  define BLZ_ERROR (-1)
+#  define BLZ_ERROR ((unsigned long) (-1))
 #endif
 
 /**
@@ -64,8 +64,8 @@ extern "C" {
  * @param src_size number of bytes to compress
  * @return required size in bytes of workmem buffer
  */
-BLZ_API unsigned int
-blz_workmem_size(unsigned int src_size);
+BLZ_API unsigned long
+blz_workmem_size(unsigned long src_size);
 
 /**
  * Get bound on compressed data size.
@@ -73,8 +73,8 @@ blz_workmem_size(unsigned int src_size);
  * @param src_size number of bytes to compress
  * @return maximum size of compressed data
  */
-BLZ_API unsigned int
-blz_max_packed_size(unsigned int src_size);
+BLZ_API unsigned long
+blz_max_packed_size(unsigned long src_size);
 
 /**
  * Compress `src_size` bytes of data from `src` to `dst`.
@@ -85,8 +85,8 @@ blz_max_packed_size(unsigned int src_size);
  * @param workmem pointer to memory for temporary use
  * @return size of compressed data
  */
-BLZ_API unsigned int
-blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem);
+BLZ_API unsigned long
+blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem);
 
 /**
  * Decompress `depacked_size` bytes of data from `src` to `dst`.
@@ -96,8 +96,8 @@ blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem);
  * @param depacked_size size of decompressed data
  * @return size of decompressed data
  */
-BLZ_API unsigned int
-blz_depack(const void *src, void *dst, unsigned int depacked_size);
+BLZ_API unsigned long
+blz_depack(const void *src, void *dst, unsigned long depacked_size);
 
 /**
  * Decompress `depacked_size` bytes of data from `src` to `dst`.
@@ -111,9 +111,9 @@ blz_depack(const void *src, void *dst, unsigned int depacked_size);
  * @param depacked_size size of decompressed data
  * @return size of decompressed data, `BLZ_ERROR` on error
  */
-BLZ_API unsigned int
-blz_depack_safe(const void *src, unsigned int src_size,
-                void *dst, unsigned int depacked_size);
+BLZ_API unsigned long
+blz_depack_safe(const void *src, unsigned long src_size,
+                void *dst, unsigned long depacked_size);
 
 #ifdef __cplusplus
 } /* extern "C" */

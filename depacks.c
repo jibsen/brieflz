@@ -31,8 +31,8 @@
 struct blz_state {
 	const unsigned char *src;
 	unsigned char *dst;
-	unsigned int src_avail;
-	unsigned int dst_avail;
+	unsigned long src_avail;
+	unsigned long dst_avail;
 	unsigned int tag;
 	unsigned int bits_left;
 };
@@ -66,10 +66,10 @@ blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 }
 
 static int
-blz_getgamma_safe(struct blz_state *bs, unsigned int *result)
+blz_getgamma_safe(struct blz_state *bs, unsigned long *result)
 {
 	unsigned int bit;
-	unsigned int v = 1;
+	unsigned long v = 1;
 
 	/* input gamma2-encoded bits */
 	do {
@@ -89,12 +89,12 @@ blz_getgamma_safe(struct blz_state *bs, unsigned int *result)
 	return 1;
 }
 
-unsigned int
-blz_depack_safe(const void *src, unsigned int src_size,
-                void *dst, unsigned int depacked_size)
+unsigned long
+blz_depack_safe(const void *src, unsigned long src_size,
+                void *dst, unsigned long depacked_size)
 {
 	struct blz_state bs;
-	unsigned int dst_size = 1;
+	unsigned long dst_size = 1;
 	unsigned int bit;
 
 	/* check for length == 0 */
@@ -121,7 +121,8 @@ blz_depack_safe(const void *src, unsigned int src_size,
 		}
 
 		if (bit) {
-			unsigned int len, off;
+			unsigned long len;
+			unsigned long off;
 
 			/* input match length and offset */
 			if (!blz_getgamma_safe(&bs, &len)) {
@@ -138,7 +139,7 @@ blz_depack_safe(const void *src, unsigned int src_size,
 				return BLZ_ERROR;
 			}
 
-			off = (off << 8) + (unsigned int) *bs.src++ + 1;
+			off = (off << 8) + (unsigned long) *bs.src++ + 1;
 
 			if (off > depacked_size - bs.dst_avail) {
 				return BLZ_ERROR;
@@ -153,7 +154,7 @@ blz_depack_safe(const void *src, unsigned int src_size,
 			/* copy match */
 			{
 				const unsigned char *p = bs.dst - off;
-				int i;
+				unsigned long i;
 				for (i = len; i > 0; --i) {
 					*bs.dst++ = *p++;
 				}

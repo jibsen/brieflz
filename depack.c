@@ -56,10 +56,10 @@ blz_getbit(struct blz_state *bs)
 	return bit;
 }
 
-static unsigned int
+static unsigned long
 blz_getgamma(struct blz_state *bs)
 {
-	unsigned int result = 1;
+	unsigned long result = 1;
 
 	/* input gamma2-encoded bits */
 	do {
@@ -69,11 +69,11 @@ blz_getgamma(struct blz_state *bs)
 	return result;
 }
 
-unsigned int
-blz_depack(const void *src, void *dst, unsigned int depacked_size)
+unsigned long
+blz_depack(const void *src, void *dst, unsigned long depacked_size)
 {
 	struct blz_state bs;
-	unsigned int dst_size = 1;
+	unsigned long dst_size = 1;
 
 	/* check for length == 0 */
 	if (depacked_size == 0) {
@@ -91,15 +91,15 @@ blz_depack(const void *src, void *dst, unsigned int depacked_size)
 	while (dst_size < depacked_size) {
 		if (blz_getbit(&bs)) {
 			/* input match length and offset */
-			unsigned int len = blz_getgamma(&bs) + 2;
-			unsigned int off = blz_getgamma(&bs) - 2;
+			unsigned long len = blz_getgamma(&bs) + 2;
+			unsigned long off = blz_getgamma(&bs) - 2;
 
-			off = (off << 8) + (unsigned int) *bs.src++ + 1;
+			off = (off << 8) + (unsigned long) *bs.src++ + 1;
 
 			/* copy match */
 			{
 				const unsigned char *p = bs.dst - off;
-				int i;
+				unsigned long i;
 				for (i = len; i > 0; --i) {
 					*bs.dst++ = *p++;
 				}

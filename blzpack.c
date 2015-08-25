@@ -91,17 +91,17 @@ static const unsigned long blz_crctab_n[16] = {
 };
 
 static unsigned long
-blz_crc32(const void *source, unsigned int length, unsigned long initial_crc32)
+blz_crc32(const void *src, unsigned long src_size, unsigned long initial_crc32)
 {
-	const unsigned char *buf = (const unsigned char *) source;
-	unsigned long crc = initial_crc32 ^ 0xfffffffful;
-	unsigned int i;
+	const unsigned char *buf = (const unsigned char *) src;
+	unsigned long crc = initial_crc32 ^ 0xFFFFFFFFUL;
+	unsigned long i;
 
-	if (length == 0) {
+	if (src_size == 0) {
 		return 0;
 	}
 
-	for (i = 0; i < length; ++i) {
+	for (i = 0; i < src_size; ++i) {
 		crc ^= buf[i];
 		crc = blz_crctab_n[crc & 0x0f] ^ (crc >> 4);
 		crc = blz_crctab_n[crc & 0x0f] ^ (crc >> 4);

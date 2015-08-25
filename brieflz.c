@@ -28,7 +28,7 @@
 #include "brieflz.h"
 
 /* must be a power of 2 (between 8k and 2mb appear reasonable) */
-#define BLZ_WORKMEM_SIZE (1024 * 1024)
+#define BLZ_WORKMEM_SIZE (1024 * 1024UL)
 
 #if BLZ_WORKMEM_SIZE & (BLZ_WORKMEM_SIZE - 1)
 #  error BLZ_WORKMEM_SIZE must be a power of 2
@@ -63,9 +63,9 @@ blz_putbit(struct blz_state *bs, const int bit)
 }
 
 static void
-blz_putgamma(struct blz_state *bs, unsigned int val)
+blz_putgamma(struct blz_state *bs, unsigned long val)
 {
-	unsigned int mask = val >> 1;
+	unsigned long mask = val >> 1;
 
 	/* mask = highest_bit(val >> 1) */
 	while (mask & (mask - 1)) {
@@ -83,19 +83,19 @@ blz_putgamma(struct blz_state *bs, unsigned int val)
 	blz_putbit(bs, 0);
 }
 
-static unsigned int
+static unsigned long
 blz_hash4(const unsigned char *data)
 {
 	/* hash next four bytes of data[] */
-	unsigned int val = data[0];
+	unsigned long val = data[0];
 	val = (val * 317) + data[1];
 	val = (val * 317) + data[2];
 	val = (val * 317) + data[3];
 	return val & (BLZ_WORKMEM_SIZE / sizeof(const unsigned char *) - 1);
 }
 
-unsigned int
-blz_workmem_size(unsigned int src_size)
+unsigned long
+blz_workmem_size(unsigned long src_size)
 {
 	(void) src_size;
 
@@ -103,20 +103,20 @@ blz_workmem_size(unsigned int src_size)
 	return BLZ_WORKMEM_SIZE;
 }
 
-unsigned int
-blz_max_packed_size(unsigned int src_size)
+unsigned long
+blz_max_packed_size(unsigned long src_size)
 {
 	/* return max compressed size */
 	return src_size + src_size / 8 + 64;
 }
 
-unsigned int
-blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
+unsigned long
+blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 {
 	struct blz_state bs;
 	const unsigned char **lookup = (const unsigned char **) workmem;
 	const unsigned char *prevsrc = (const unsigned char *) src;
-	unsigned int src_avail = src_size;
+	unsigned long src_avail = src_size;
 
 	/* check for empty input */
 	if (src_avail == 0) {
@@ -125,7 +125,7 @@ blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
 
 	/* init lookup[] */
 	{
-		unsigned int i;
+		unsigned long i;
 		for (i = 0; i < BLZ_WORKMEM_SIZE / sizeof(const unsigned char *); ++i) {
 			lookup[i] = 0;
 		}
@@ -151,7 +151,7 @@ blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
 	/* main compression loop */
 	while (src_avail > 4) {
 		const unsigned char *p;
-		unsigned int len = 0;
+		unsigned long len = 0;
 
 		/* update lookup[] up to current position */
 		while (prevsrc < bs.src) {
@@ -171,7 +171,7 @@ blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
 
 		/* output match or literal */
 		if (len > 3) {
-			unsigned int off = (unsigned int) (bs.src - p - 1);
+			unsigned long off = (unsigned long) (bs.src - p - 1);
 
 			/* output match tag */
 			blz_putbit(&bs, 1);
@@ -212,5 +212,5 @@ blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
 	bs.tagpos[1] = (bs.tag >> 8) & 0x00ff;
 
 	/* return compressed size */
-	return (unsigned int) (bs.dst - (unsigned char *) dst);
+	return (unsigned long) (bs.dst - (unsigned char *) dst);
 }
