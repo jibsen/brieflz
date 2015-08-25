@@ -34,7 +34,7 @@ struct blz_state {
 	unsigned int src_avail;
 	unsigned int dst_avail;
 	unsigned int tag;
-	unsigned int bitcount;
+	unsigned int bits_left;
 };
 
 static int
@@ -43,7 +43,7 @@ blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 	unsigned int bit;
 
 	/* check if tag is empty */
-	if (!bs->bitcount--) {
+	if (!bs->bits_left--) {
 		if (bs->src_avail < 2) {
 			return 0;
 		}
@@ -53,7 +53,7 @@ blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 		bs->tag = (unsigned int) bs->src[0]
 		       | ((unsigned int) bs->src[1] << 8);
 		bs->src += 2;
-		bs->bitcount = 15;
+		bs->bits_left = 15;
 	}
 
 	/* shift bit out of tag */
@@ -106,7 +106,7 @@ blz_depack_safe(const void *src, unsigned int src_size,
 	bs.src_avail = src_size;
 	bs.dst = (unsigned char *) dst;
 	bs.dst_avail = depacked_size;
-	bs.bitcount = 0;
+	bs.bits_left = 0;
 
 	/* first byte verbatim */
 	if (!bs.src_avail-- || !bs.dst_avail--) {

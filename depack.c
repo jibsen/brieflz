@@ -32,7 +32,7 @@ struct blz_state {
 	const unsigned char *src;
 	unsigned char *dst;
 	unsigned int tag;
-	unsigned int bitcount;
+	unsigned int bits_left;
 };
 
 static unsigned int
@@ -41,12 +41,12 @@ blz_getbit(struct blz_state *bs)
 	unsigned int bit;
 
 	/* check if tag is empty */
-	if (!bs->bitcount--) {
+	if (!bs->bits_left--) {
 		/* load next tag */
 		bs->tag = (unsigned int) bs->src[0]
 		       | ((unsigned int) bs->src[1] << 8);
 		bs->src += 2;
-		bs->bitcount = 15;
+		bs->bits_left = 15;
 	}
 
 	/* shift bit out of tag */
@@ -82,7 +82,7 @@ blz_depack(const void *src, void *dst, unsigned int depacked_size)
 
 	bs.src = (const unsigned char *) src;
 	bs.dst = (unsigned char *) dst;
-	bs.bitcount = 0;
+	bs.bits_left = 0;
 
 	/* first byte verbatim */
 	*bs.dst++ = *bs.src++;

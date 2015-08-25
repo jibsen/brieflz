@@ -40,14 +40,14 @@ struct blz_state {
 	unsigned char *dst;
 	unsigned char *tagpos;
 	unsigned int tag;
-	unsigned int bitcount;
+	unsigned int bits_left;
 };
 
 static void
 blz_putbit(struct blz_state *bs, const int bit)
 {
 	/* check if tag is full */
-	if (!bs->bitcount--) {
+	if (!bs->bits_left--) {
 		/* store tag */
 		bs->tagpos[0] = bs->tag & 0x00ff;
 		bs->tagpos[1] = (bs->tag >> 8) & 0x00ff;
@@ -55,7 +55,7 @@ blz_putbit(struct blz_state *bs, const int bit)
 		/* init next tag */
 		bs->tagpos = bs->dst;
 		bs->dst += 2;
-		bs->bitcount = 15;
+		bs->bits_left = 15;
 	}
 
 	/* shift bit into tag */
@@ -146,7 +146,7 @@ blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
 	bs.tagpos = bs.dst;
 	bs.dst += 2;
 	bs.tag = 0;
-	bs.bitcount = 16;
+	bs.bits_left = 16;
 
 	/* main compression loop */
 	while (src_avail > 4) {
@@ -207,7 +207,7 @@ blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
 	}
 
 	/* shift last tag into position and store */
-	bs.tag <<= bs.bitcount;
+	bs.tag <<= bs.bits_left;
 	bs.tagpos[0] = bs.tag & 0x00ff;
 	bs.tagpos[1] = (bs.tag >> 8) & 0x00ff;
 
