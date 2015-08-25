@@ -50,7 +50,8 @@ blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 		bs->src_avail -= 2;
 
 		/* load next tag */
-		bs->tag = bs->src[0] + ((unsigned int) bs->src[1] << 8);
+		bs->tag = (unsigned int) bs->src[0]
+		       | ((unsigned int) bs->src[1] << 8);
 		bs->src += 2;
 		bs->bitcount = 15;
 	}
@@ -139,7 +140,7 @@ blz_depack_safe(const void *src, unsigned int src_size,
 
 			off = (off << 8) + (unsigned int) *bs.src++ + 1;
 
-			if (off > (depacked_size - bs.dst_avail)) {
+			if (off > depacked_size - bs.dst_avail) {
 				return BLZ_ERROR;
 			}
 

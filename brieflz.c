@@ -31,7 +31,7 @@
 #define BLZ_WORKMEM_SIZE (1024 * 1024)
 
 #if BLZ_WORKMEM_SIZE & (BLZ_WORKMEM_SIZE - 1)
-# error BLZ_WORKMEM_SIZE must be a power of 2
+#  error BLZ_WORKMEM_SIZE must be a power of 2
 #endif
 
 /* internal data structure */

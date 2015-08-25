@@ -43,7 +43,8 @@ blz_getbit(struct blz_state *bs)
 	/* check if tag is empty */
 	if (!bs->bitcount--) {
 		/* load next tag */
-		bs->tag = bs->src[0] + ((unsigned int) bs->src[1] << 8);
+		bs->tag = (unsigned int) bs->src[0]
+		       | ((unsigned int) bs->src[1] << 8);
 		bs->src += 2;
 		bs->bitcount = 15;
 	}
