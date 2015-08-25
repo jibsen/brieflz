@@ -49,8 +49,8 @@ blz_putbit(struct blz_state *bs, const int bit)
 	/* check if tag is full */
 	if (!bs->bits_left--) {
 		/* store tag */
-		bs->tagpos[0] = bs->tag & 0x00ff;
-		bs->tagpos[1] = (bs->tag >> 8) & 0x00ff;
+		bs->tagpos[0] = bs->tag & 0x00FF;
+		bs->tagpos[1] = (bs->tag >> 8) & 0x00FF;
 
 		/* init next tag */
 		bs->tagpos = bs->dst;
@@ -181,7 +181,7 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 
 			/* output match offset */
 			blz_putgamma(&bs, (off >> 8) + 2);
-			*bs.dst++ = off & 0x00ff;
+			*bs.dst++ = off & 0x00FF;
 
 			bs.src += len;
 			src_avail -= len;
@@ -208,8 +208,8 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 
 	/* shift last tag into position and store */
 	bs.tag <<= bs.bits_left;
-	bs.tagpos[0] = bs.tag & 0x00ff;
-	bs.tagpos[1] = (bs.tag >> 8) & 0x00ff;
+	bs.tagpos[0] = bs.tag & 0x00FF;
+	bs.tagpos[1] = (bs.tag >> 8) & 0x00FF;
 
 	/* return compressed size */
 	return (unsigned long) (bs.dst - (unsigned char *) dst);

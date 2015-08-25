@@ -57,7 +57,7 @@
 /*
  * The block-size used to process data.
  */
-#define BLOCK_SIZE (56u * 1024u)
+#define BLOCK_SIZE (56 * 1024UL)
 
 /*
  * The size of the block header.
@@ -75,7 +75,7 @@ typedef unsigned char byte;
 #if CHAR_BIT == 8
 #  define octet(v) ((byte) (v))
 #else
-#  define octet(v) ((v) & 0x00ffu)
+#  define octet(v) ((v) & 0x00FF)
 #endif
 
 /*
@@ -84,10 +84,10 @@ typedef unsigned char byte;
  */
 
 static const unsigned long blz_crctab_n[16] = {
-	0x00000000ul, 0x1db71064ul, 0x3b6e20c8ul, 0x26d930acul, 0x76dc4190ul,
-	0x6b6b51f4ul, 0x4db26158ul, 0x5005713cul, 0xedb88320ul, 0xf00f9344ul,
-	0xd6d6a3e8ul, 0xcb61b38cul, 0x9b64c2b0ul, 0x86d3d2d4ul, 0xa00ae278ul,
-	0xbdbdf21cul
+	0x00000000UL, 0x1DB71064UL, 0x3B6E20C8UL, 0x26D930ACUL, 0x76DC4190UL,
+	0x6B6B51F4UL, 0x4DB26158UL, 0x5005713CUL, 0xEDB88320UL, 0xF00F9344UL,
+	0xD6D6A3E8UL, 0xCB61B38CUL, 0x9B64C2B0UL, 0x86D3D2D4UL, 0xA00AE278UL,
+	0xBDBDF21CUL
 };
 
 static unsigned long
@@ -103,11 +103,11 @@ blz_crc32(const void *src, unsigned long src_size, unsigned long initial_crc32)
 
 	for (i = 0; i < src_size; ++i) {
 		crc ^= buf[i];
-		crc = blz_crctab_n[crc & 0x0f] ^ (crc >> 4);
-		crc = blz_crctab_n[crc & 0x0f] ^ (crc >> 4);
+		crc = blz_crctab_n[crc & 0x0F] ^ (crc >> 4);
+		crc = blz_crctab_n[crc & 0x0F] ^ (crc >> 4);
 	}
 
-	return crc ^ 0xfffffffful;
+	return crc ^ 0xFFFFFFFFUL;
 }
 
 /*
@@ -291,7 +291,7 @@ decompress_file(const char *packedname, const char *newname)
 		counter = (counter + 1) & 0x03;
 
 		/* verify values in header */
-		if (get_uint32(header + 0 * 4) != 0x626C7A1Aul /* "blz\x1A" */
+		if (get_uint32(header + 0 * 4) != 0x626C7A1AUL /* "blz\x1A" */
 		 || get_uint32(header + 1 * 4) != 1
 		 || get_uint32(header + 2 * 4) > max_packed_size
 		 || get_uint32(header + 4 * 4) > BLOCK_SIZE) {
