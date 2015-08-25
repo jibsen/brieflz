@@ -36,8 +36,8 @@
 
 /* internal data structure */
 struct blz_state {
-	const unsigned char *source;
-	unsigned char *destination;
+	const unsigned char *src;
+	unsigned char *dst;
 	unsigned char *tagpos;
 	unsigned int tag;
 	unsigned int bitcount;
@@ -53,8 +53,8 @@ blz_putbit(struct blz_state *bs, const int bit)
 		bs->tagpos[1] = (bs->tag >> 8) & 0x00ff;
 
 		/* init next tag */
-		bs->tagpos = bs->destination;
-		bs->destination += 2;
+		bs->tagpos = bs->dst;
+		bs->dst += 2;
 		bs->bitcount = 15;
 	}
 
@@ -95,30 +95,31 @@ blz_hash4(const unsigned char *data)
 }
 
 unsigned int
-blz_workmem_size(unsigned int length)
+blz_workmem_size(unsigned int src_size)
 {
-	(void) length;
+	(void) src_size;
 
 	/* return required workmem size */
 	return BLZ_WORKMEM_SIZE;
 }
 
 unsigned int
-blz_max_packed_size(unsigned int length)
+blz_max_packed_size(unsigned int src_size)
 {
 	/* return max compressed size */
-	return length + length / 8 + 64;
+	return src_size + src_size / 8 + 64;
 }
 
 unsigned int
-blz_pack(const void *source, void *destination, unsigned int length, void *workmem)
+blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem)
 {
 	struct blz_state bs;
 	const unsigned char **lookup = (const unsigned char **) workmem;
-	const unsigned char *backptr = (const unsigned char *) source;
+	const unsigned char *prevsrc = (const unsigned char *) src;
+	unsigned int src_avail = src_size;
 
-	/* check for length == 0 */
-	if (length == 0) {
+	/* check for empty input */
+	if (src_avail == 0) {
 		return 0;
 	}
 
@@ -130,79 +131,79 @@ blz_pack(const void *source, void *destination, unsigned int length, void *workm
 		}
 	}
 
-	bs.source = (const unsigned char *) source;
-	bs.destination = (unsigned char *) destination;
+	bs.src = (const unsigned char *) src;
+	bs.dst = (unsigned char *) dst;
 
 	/* first byte verbatim */
-	*bs.destination++ = *bs.source++;
+	*bs.dst++ = *bs.src++;
 
-	/* check for length == 1 */
-	if (--length == 0) {
+	/* check for 1 byte input */
+	if (--src_avail == 0) {
 		return 1;
 	}
 
 	/* init first tag */
-	bs.tagpos = bs.destination;
-	bs.destination += 2;
+	bs.tagpos = bs.dst;
+	bs.dst += 2;
 	bs.tag = 0;
 	bs.bitcount = 16;
 
 	/* main compression loop */
-	while (length > 4) {
-		const unsigned char *ppos;
+	while (src_avail > 4) {
+		const unsigned char *p;
 		unsigned int len = 0;
 
 		/* update lookup[] up to current position */
-		while (backptr < bs.source) {
-			lookup[blz_hash4(backptr)] = backptr;
-			backptr++;
+		while (prevsrc < bs.src) {
+			lookup[blz_hash4(prevsrc)] = prevsrc;
+			prevsrc++;
 		}
 
 		/* look up current position */
-		ppos = lookup[blz_hash4(bs.source)];
+		p = lookup[blz_hash4(bs.src)];
 
 		/* check match */
-		if (ppos) {
-			while ((len < length) && (*(ppos + len) == *(bs.source + len))) {
+		if (p) {
+			while (len < src_avail && p[len] == bs.src[len]) {
 				++len;
 			}
 		}
 
 		/* output match or literal */
 		if (len > 3) {
-			unsigned int pos = (unsigned int) (bs.source - ppos - 1);
+			unsigned int off = (unsigned int) (bs.src - p - 1);
 
 			/* output match tag */
 			blz_putbit(&bs, 1);
 
-			/* output length */
+			/* output match length */
 			blz_putgamma(&bs, len - 2);
 
-			/* output position */
-			blz_putgamma(&bs, (pos >> 8) + 2);
-			*bs.destination++ = pos & 0x00ff;
+			/* output match offset */
+			blz_putgamma(&bs, (off >> 8) + 2);
+			*bs.dst++ = off & 0x00ff;
 
-			bs.source += len;
-			length -= len;
+			bs.src += len;
+			src_avail -= len;
 		}
 		else {
 			/* output literal tag */
 			blz_putbit(&bs, 0);
 
 			/* copy literal */
-			*bs.destination++ = *bs.source++;
-			length--;
+			*bs.dst++ = *bs.src++;
+			src_avail--;
 		}
 	}
 
 	/* output any remaining literals */
-	while (length > 0) {
+	while (src_avail > 0) {
 		/* output literal tag */
 		blz_putbit(&bs, 0);
 
 		/* copy literal */
-		*bs.destination++ = *bs.source++;
-		length--;
+		*bs.dst++ = *bs.src++;
+		src_avail--;
 	}
 
 	/* shift last tag into position and store */
@@ -210,6 +211,6 @@ blz_pack(const void *source, void *destination, unsigned int length, void *workm
 	bs.tagpos[0] = bs.tag & 0x00ff;
 	bs.tagpos[1] = (bs.tag >> 8) & 0x00ff;
 
-	/* return compressed length */
-	return (unsigned int) (bs.destination - (unsigned char *) destination);
+	/* return compressed size */
+	return (unsigned int) (bs.dst - (unsigned char *) dst);
 }

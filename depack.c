@@ -29,13 +29,13 @@
 
 /* internal data structure */
 struct blz_state {
-	const unsigned char *source;
-	unsigned char *destination;
+	const unsigned char *src;
+	unsigned char *dst;
 	unsigned int tag;
 	unsigned int bitcount;
 };
 
-static int
+static unsigned int
 blz_getbit(struct blz_state *bs)
 {
 	unsigned int bit;
@@ -43,8 +43,8 @@ blz_getbit(struct blz_state *bs)
 	/* check if tag is empty */
 	if (!bs->bitcount--) {
 		/* load next tag */
-		bs->tag = bs->source[0] + ((unsigned int) bs->source[1] << 8);
-		bs->source += 2;
+		bs->tag = bs->src[0] + ((unsigned int) bs->src[1] << 8);
+		bs->src += 2;
 		bs->bitcount = 15;
 	}
 
@@ -69,51 +69,51 @@ blz_getgamma(struct blz_state *bs)
 }
 
 unsigned int
-blz_depack(const void *source, void *destination, unsigned int depacked_length)
+blz_depack(const void *src, void *dst, unsigned int depacked_size)
 {
 	struct blz_state bs;
-	unsigned int length = 1;
+	unsigned int dst_size = 1;
 
 	/* check for length == 0 */
-	if (depacked_length == 0) {
+	if (depacked_size == 0) {
 		return 0;
 	}
 
-	bs.source = (const unsigned char *) source;
-	bs.destination = (unsigned char *) destination;
+	bs.src = (const unsigned char *) src;
+	bs.dst = (unsigned char *) dst;
 	bs.bitcount = 0;
 
 	/* first byte verbatim */
-	*bs.destination++ = *bs.source++;
+	*bs.dst++ = *bs.src++;
 
 	/* main decompression loop */
-	while (length < depacked_length) {
+	while (dst_size < depacked_size) {
 		if (blz_getbit(&bs)) {
-			/* input match length and position */
+			/* input match length and offset */
 			unsigned int len = blz_getgamma(&bs) + 2;
-			unsigned int pos = blz_getgamma(&bs) - 2;
+			unsigned int off = blz_getgamma(&bs) - 2;
 
-			pos = (pos << 8) + *bs.source++ + 1;
+			off = (off << 8) + (unsigned int) *bs.src++ + 1;
 
 			/* copy match */
 			{
-				const unsigned char *ppos = bs.destination - pos;
+				const unsigned char *p = bs.dst - off;
 				int i;
 				for (i = len; i > 0; --i) {
-					*bs.destination++ = *ppos++;
+					*bs.dst++ = *p++;
 				}
 			}
 
-			length += len;
+			dst_size += len;
 		}
 		else {
 			/* copy literal */
-			*bs.destination++ = *bs.source++;
+			*bs.dst++ = *bs.src++;
 
-			length++;
+			dst_size++;
 		}
 	}
 
-	/* return decompressed length */
-	return length;
+	/* return decompressed size */
+	return dst_size;
 }

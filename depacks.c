@@ -29,10 +29,10 @@
 
 /* internal data structure */
 struct blz_state {
-	const unsigned char *source;
-	unsigned char *destination;
-	unsigned int srclen;
-	unsigned int dstlen;
+	const unsigned char *src;
+	unsigned char *dst;
+	unsigned int src_avail;
+	unsigned int dst_avail;
 	unsigned int tag;
 	unsigned int bitcount;
 };
@@ -44,14 +44,14 @@ blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 
 	/* check if tag is empty */
 	if (!bs->bitcount--) {
-		if (bs->srclen < 2) {
+		if (bs->src_avail < 2) {
 			return 0;
 		}
-		bs->srclen -= 2;
+		bs->src_avail -= 2;
 
 		/* load next tag */
-		bs->tag = bs->source[0] + ((unsigned int) bs->source[1] << 8);
-		bs->source += 2;
+		bs->tag = bs->src[0] + ((unsigned int) bs->src[1] << 8);
+		bs->src += 2;
 		bs->bitcount = 15;
 	}
 
@@ -89,88 +89,88 @@ blz_getgamma_safe(struct blz_state *bs, unsigned int *result)
 }
 
 unsigned int
-blz_depack_safe(const void *source, unsigned int srclen,
-                void *destination, unsigned int depacked_length)
+blz_depack_safe(const void *src, unsigned int src_size,
+                void *dst, unsigned int depacked_size)
 {
 	struct blz_state bs;
-	unsigned int length = 1;
+	unsigned int dst_size = 1;
 	unsigned int bit;
 
 	/* check for length == 0 */
-	if (depacked_length == 0) {
+	if (depacked_size == 0) {
 		return 0;
 	}
 
-	bs.source = (const unsigned char *) source;
-	bs.srclen = srclen;
-	bs.destination = (unsigned char *) destination;
-	bs.dstlen = depacked_length;
+	bs.src = (const unsigned char *) src;
+	bs.src_avail = src_size;
+	bs.dst = (unsigned char *) dst;
+	bs.dst_avail = depacked_size;
 	bs.bitcount = 0;
 
 	/* first byte verbatim */
-	if (!bs.srclen-- || !bs.dstlen--) {
+	if (!bs.src_avail-- || !bs.dst_avail--) {
 		return BLZ_ERROR;
 	}
-	*bs.destination++ = *bs.source++;
+	*bs.dst++ = *bs.src++;
 
 	/* main decompression loop */
-	while (length < depacked_length) {
+	while (dst_size < depacked_size) {
 		if (!blz_getbit_safe(&bs, &bit)) {
 			return BLZ_ERROR;
 		}
 
 		if (bit) {
-			unsigned int len, pos;
+			unsigned int len, off;
 
-			/* input match length and position */
+			/* input match length and offset */
 			if (!blz_getgamma_safe(&bs, &len)) {
 				return BLZ_ERROR;
 			}
-			if (!blz_getgamma_safe(&bs, &pos)) {
+			if (!blz_getgamma_safe(&bs, &off)) {
 				return BLZ_ERROR;
 			}
 
 			len += 2;
-			pos -= 2;
+			off -= 2;
 
-			if (!bs.srclen--) {
+			if (!bs.src_avail--) {
 				return BLZ_ERROR;
 			}
 
-			pos = (pos << 8) + *bs.source++ + 1;
+			off = (off << 8) + (unsigned int) *bs.src++ + 1;
 
-			if (pos > (depacked_length - bs.dstlen)) {
+			if (off > (depacked_size - bs.dst_avail)) {
 				return BLZ_ERROR;
 			}
 
-			if (len > bs.dstlen) {
+			if (len > bs.dst_avail) {
 				return BLZ_ERROR;
 			}
 
-			bs.dstlen -= len;
+			bs.dst_avail -= len;
 
 			/* copy match */
 			{
-				const unsigned char *ppos = bs.destination - pos;
+				const unsigned char *p = bs.dst - off;
 				int i;
 				for (i = len; i > 0; --i) {
-					*bs.destination++ = *ppos++;
+					*bs.dst++ = *p++;
 				}
 			}
 
-			length += len;
+			dst_size += len;
 		}
 		else {
 			/* copy literal */
-			if (!bs.srclen-- || !bs.dstlen--) {
+			if (!bs.src_avail-- || !bs.dst_avail--) {
 				return BLZ_ERROR;
 			}
-			*bs.destination++ = *bs.source++;
+			*bs.dst++ = *bs.src++;
 
-			length++;
+			dst_size++;
 		}
 	}
 
-	/* return decompressed length */
-	return length;
+	/* return decompressed size */
+	return dst_size;
 }

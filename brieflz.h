@@ -59,55 +59,61 @@ extern "C" {
 #endif
 
 /**
- * Get the required size of the workmem buffer.
- * @param length - the length in bytes of the data.
- * @return required size in bytes of the workmem buffer.
+ * Get required size of workmem buffer.
+ *
+ * @param src_size number of bytes to compress
+ * @return required size in bytes of workmem buffer
  */
 BLZ_API unsigned int
-blz_workmem_size(unsigned int length);
+blz_workmem_size(unsigned int src_size);
 
 /**
- * Get the maximum output size produced on uncompressible data.
- * @param length - the length in bytes of the data.
- * @return maximum required size in bytes of the output buffer.
+ * Get bound on compressed data size.
+ *
+ * @param src_size number of bytes to compress
+ * @return maximum size of compressed data
  */
 BLZ_API unsigned int
-blz_max_packed_size(unsigned int length);
+blz_max_packed_size(unsigned int src_size);
 
 /**
- * Compress data.
- * @param source - pointer to data.
- * @param destination - where to store the compressed data.
- * @param length - the length in bytes of the data.
- * @param workmem - pointer to memory for temporary use.
- * @return the length of the compressed data.
+ * Compress `src_size` bytes of data from `src` to `dst`.
+ *
+ * @param src pointer to data
+ * @param dst pointer to where to place compressed data
+ * @param src_size number of bytes to compress
+ * @param workmem pointer to memory for temporary use
+ * @return size of compressed data
  */
 BLZ_API unsigned int
-blz_pack(const void *source, void *destination, unsigned int length, void *workmem);
+blz_pack(const void *src, void *dst, unsigned int src_size, void *workmem);
 
 /**
- * Decompress data.
- * @param source - pointer to the compressed data.
- * @param destination - where to store the decompressed data.
- * @param depacked_length - the length of the decompressed data.
- * @return the length of the decompressed data.
+ * Decompress `depacked_size` bytes of data from `src` to `dst`.
+ *
+ * @param src pointer to compressed data
+ * @param dst pointer to where to place decompressed data
+ * @param depacked_size size of decompressed data
+ * @return size of decompressed data
  */
 BLZ_API unsigned int
-blz_depack(const void *source, void *destination, unsigned int depacked_length);
+blz_depack(const void *src, void *dst, unsigned int depacked_size);
 
 /**
- * Decompress data safely.
- * @param source - pointer to the compressed data.
- * @param srclen - the size of the source buffer in bytes.
- * @param destination - where to store the decompressed data.
- * @param depacked_length - the length of the decompressed data.
- * @return the length of the decompressed data, or BLZ_ERROR on error.
- * @note This functions reads at most srclen bytes from source[], and
- * writes at most depacked_length bytes to destination[].
+ * Decompress `depacked_size` bytes of data from `src` to `dst`.
+ *
+ * Reads at most `src_size` bytes from `src`.
+ * Writes at most `depacked_size` bytes to `dst`.
+ *
+ * @param src pointer to compressed data
+ * @param src_size number of bytes to decompress
+ * @param dst pointer to where to place decompressed data
+ * @param depacked_size size of decompressed data
+ * @return size of decompressed data, `BLZ_ERROR` on error
  */
 BLZ_API unsigned int
-blz_depack_safe(const void *source, unsigned int srclen,
-                void *destination, unsigned int depacked_length);
+blz_depack_safe(const void *src, unsigned int src_size,
+                void *dst, unsigned int depacked_size);
 
 #ifdef __cplusplus
 } /* extern "C" */
