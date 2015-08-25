@@ -27,9 +27,8 @@
  * This is a simple example packer, which can compress and decompress a
  * single file using BriefLZ.
  *
- * It processes the data in blocks of 56k to make the 32-bit and 16-bit
- * versions compatible. The 32-bit version can achieve better ratios by
- * using larger block sizes.
+ * It processes the data in blocks of 1024k. Adjust BLOCK_SIZE to 56k or less
+ * to compile for 16-bit.
  *
  * Each compressed block starts with a 24 byte header with the following
  * format:
@@ -57,7 +56,7 @@
 /*
  * The block-size used to process data.
  */
-#define BLOCK_SIZE (56 * 1024UL)
+#define BLOCK_SIZE (1024 * 1024UL)
 
 /*
  * The size of the block header.
