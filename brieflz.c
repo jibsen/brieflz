@@ -27,12 +27,21 @@
 
 #include "brieflz.h"
 
-/* Must be a power of 2 (between 8k and 2mb appear reasonable) */
-#define BLZ_WORKMEM_SIZE (1024 * 1024UL)
-
-#if BLZ_WORKMEM_SIZE & (BLZ_WORKMEM_SIZE - 1)
-#  error BLZ_WORKMEM_SIZE must be a power of 2
+/*
+ * Number of bits of hash to use for lookup.
+ *
+ * The size of the lookup table (and thus workmem) is computed from this.
+ *
+ * Values between 10 and 18 work well. The default value 17 corresponds
+ * to a workmem size of 1mb on 64-bit systems.
+ */
+#ifndef BLZ_HASH_BITS
+#  define BLZ_HASH_BITS 17
 #endif
+
+#define LOOKUP_SIZE (1UL << BLZ_HASH_BITS)
+
+#define WORKMEM_SIZE (LOOKUP_SIZE * sizeof(const unsigned char *))
 
 /* Internal data structure */
 struct blz_state {
@@ -90,7 +99,7 @@ blz_hash4(const unsigned char *data)
 	val = (val * 317) + data[1];
 	val = (val * 317) + data[2];
 	val = (val * 317) + data[3];
-	return val & (BLZ_WORKMEM_SIZE / sizeof(const unsigned char *) - 1);
+	return val & (LOOKUP_SIZE - 1);
 }
 
 unsigned long
@@ -98,7 +107,7 @@ blz_workmem_size(unsigned long src_size)
 {
 	(void) src_size;
 
-	return BLZ_WORKMEM_SIZE;
+	return WORKMEM_SIZE;
 }
 
 unsigned long
@@ -123,7 +132,7 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 	/* Initialize lookup[] */
 	{
 		unsigned long i;
-		for (i = 0; i < BLZ_WORKMEM_SIZE / sizeof(const unsigned char *); ++i) {
+		for (i = 0; i < LOOKUP_SIZE; ++i) {
 			lookup[i] = 0;
 		}
 	}
