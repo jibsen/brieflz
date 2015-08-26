@@ -93,13 +93,13 @@ blz_putgamma(struct blz_state *bs, unsigned long val)
 }
 
 static unsigned long
-blz_hash4(const unsigned char *data)
+blz_hash4(const unsigned char *s)
 {
-	unsigned long val = data[0];
-	val = (val * 317) + data[1];
-	val = (val * 317) + data[2];
-	val = (val * 317) + data[3];
-	return val & (LOOKUP_SIZE - 1);
+	unsigned long val = (unsigned long) s[0]
+	                 | ((unsigned long) s[1] << 8)
+	                 | ((unsigned long) s[2] << 16)
+	                 | ((unsigned long) s[3] << 24);
+	return (val * 2654435761UL) >> (32 - BLZ_HASH_BITS);
 }
 
 unsigned long
