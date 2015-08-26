@@ -45,11 +45,11 @@
  * and put_uint32() functions.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <stddef.h>
 #include <limits.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "brieflz.h"
 
