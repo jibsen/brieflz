@@ -27,14 +27,14 @@
 
 #include "brieflz.h"
 
-/* must be a power of 2 (between 8k and 2mb appear reasonable) */
+/* Must be a power of 2 (between 8k and 2mb appear reasonable) */
 #define BLZ_WORKMEM_SIZE (1024 * 1024UL)
 
 #if BLZ_WORKMEM_SIZE & (BLZ_WORKMEM_SIZE - 1)
 #  error BLZ_WORKMEM_SIZE must be a power of 2
 #endif
 
-/* internal data structure */
+/* Internal data structure */
 struct blz_state {
 	const unsigned char *src;
 	unsigned char *dst;
@@ -46,7 +46,7 @@ struct blz_state {
 static void
 blz_putbit(struct blz_state *bs, const int bit)
 {
-	/* check if tag is full */
+	/* Check if tag is full */
 	if (!bs->bits_left--) {
 		/* store tag */
 		bs->tagpos[0] = bs->tag & 0x00FF;
@@ -58,7 +58,7 @@ blz_putbit(struct blz_state *bs, const int bit)
 		bs->bits_left = 15;
 	}
 
-	/* shift bit into tag */
+	/* Shift bit into tag */
 	bs->tag = (bs->tag << 1) + (bit ? 1 : 0);
 }
 
@@ -72,7 +72,7 @@ blz_putgamma(struct blz_state *bs, unsigned long val)
 		mask &= mask - 1;
 	}
 
-	/* output gamma2-encoded bits */
+	/* Output gamma2-encoded bits */
 	blz_putbit(bs, val & mask);
 
 	while (mask >>= 1) {
@@ -86,7 +86,6 @@ blz_putgamma(struct blz_state *bs, unsigned long val)
 static unsigned long
 blz_hash4(const unsigned char *data)
 {
-	/* hash next four bytes of data[] */
 	unsigned long val = data[0];
 	val = (val * 317) + data[1];
 	val = (val * 317) + data[2];
@@ -99,14 +98,12 @@ blz_workmem_size(unsigned long src_size)
 {
 	(void) src_size;
 
-	/* return required workmem size */
 	return BLZ_WORKMEM_SIZE;
 }
 
 unsigned long
 blz_max_packed_size(unsigned long src_size)
 {
-	/* return max compressed size */
 	return src_size + src_size / 8 + 64;
 }
 
@@ -118,12 +115,12 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 	const unsigned char *prevsrc = (const unsigned char *) src;
 	unsigned long src_avail = src_size;
 
-	/* check for empty input */
+	/* Check for empty input */
 	if (src_avail == 0) {
 		return 0;
 	}
 
-	/* init lookup[] */
+	/* Initialize lookup[] */
 	{
 		unsigned long i;
 		for (i = 0; i < BLZ_WORKMEM_SIZE / sizeof(const unsigned char *); ++i) {
@@ -134,52 +131,52 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 	bs.src = (const unsigned char *) src;
 	bs.dst = (unsigned char *) dst;
 
-	/* first byte verbatim */
+	/* First byte verbatim */
 	*bs.dst++ = *bs.src++;
 
-	/* check for 1 byte input */
+	/* Check for 1 byte input */
 	if (--src_avail == 0) {
 		return 1;
 	}
 
-	/* init first tag */
+	/* Initialize first tag */
 	bs.tagpos = bs.dst;
 	bs.dst += 2;
 	bs.tag = 0;
 	bs.bits_left = 16;
 
-	/* main compression loop */
+	/* Main compression loop */
 	while (src_avail > 4) {
 		const unsigned char *p;
 		unsigned long len = 0;
 
-		/* update lookup[] up to current position */
+		/* Update lookup[] up to current position */
 		while (prevsrc < bs.src) {
 			lookup[blz_hash4(prevsrc)] = prevsrc;
 			prevsrc++;
 		}
 
-		/* look up current position */
+		/* Look up current position */
 		p = lookup[blz_hash4(bs.src)];
 
-		/* check match */
+		/* Check match */
 		if (p) {
 			while (len < src_avail && p[len] == bs.src[len]) {
 				++len;
 			}
 		}
 
-		/* output match or literal */
+		/* Output match or literal */
 		if (len > 3) {
 			unsigned long off = (unsigned long) (bs.src - p - 1);
 
-			/* output match tag */
+			/* Output match tag */
 			blz_putbit(&bs, 1);
 
-			/* output match length */
+			/* Output match length */
 			blz_putgamma(&bs, len - 2);
 
-			/* output match offset */
+			/* Output match offset */
 			blz_putgamma(&bs, (off >> 8) + 2);
 			*bs.dst++ = off & 0x00FF;
 
@@ -187,30 +184,30 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 			src_avail -= len;
 		}
 		else {
-			/* output literal tag */
+			/* Output literal tag */
 			blz_putbit(&bs, 0);
 
-			/* copy literal */
+			/* Copy literal */
 			*bs.dst++ = *bs.src++;
 			src_avail--;
 		}
 	}
 
-	/* output any remaining literals */
+	/* Output any remaining literals */
 	while (src_avail > 0) {
-		/* output literal tag */
+		/* Output literal tag */
 		blz_putbit(&bs, 0);
 
-		/* copy literal */
+		/* Copy literal */
 		*bs.dst++ = *bs.src++;
 		src_avail--;
 	}
 
-	/* shift last tag into position and store */
+	/* Shift last tag into position and store */
 	bs.tag <<= bs.bits_left;
 	bs.tagpos[0] = bs.tag & 0x00FF;
 	bs.tagpos[1] = (bs.tag >> 8) & 0x00FF;
 
-	/* return compressed size */
+	/* Return compressed size */
 	return (unsigned long) (bs.dst - (unsigned char *) dst);
 }

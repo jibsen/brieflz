@@ -27,7 +27,7 @@
 
 #include "brieflz.h"
 
-/* internal data structure */
+/* Internal data structure */
 struct blz_state {
 	const unsigned char *src;
 	unsigned char *dst;
@@ -40,16 +40,16 @@ blz_getbit(struct blz_state *bs)
 {
 	unsigned int bit;
 
-	/* check if tag is empty */
+	/* Check if tag is empty */
 	if (!bs->bits_left--) {
-		/* load next tag */
+		/* Load next tag */
 		bs->tag = (unsigned int) bs->src[0]
 		       | ((unsigned int) bs->src[1] << 8);
 		bs->src += 2;
 		bs->bits_left = 15;
 	}
 
-	/* shift bit out of tag */
+	/* Shift bit out of tag */
 	bit = (bs->tag >> 15) & 0x01;
 	bs->tag <<= 1;
 
@@ -61,7 +61,7 @@ blz_getgamma(struct blz_state *bs)
 {
 	unsigned long result = 1;
 
-	/* input gamma2-encoded bits */
+	/* Input gamma2-encoded bits */
 	do {
 		result = (result << 1) + blz_getbit(bs);
 	} while (blz_getbit(bs));
@@ -75,7 +75,7 @@ blz_depack(const void *src, void *dst, unsigned long depacked_size)
 	struct blz_state bs;
 	unsigned long dst_size = 1;
 
-	/* check for length == 0 */
+	/* Check for empty input */
 	if (depacked_size == 0) {
 		return 0;
 	}
@@ -84,19 +84,19 @@ blz_depack(const void *src, void *dst, unsigned long depacked_size)
 	bs.dst = (unsigned char *) dst;
 	bs.bits_left = 0;
 
-	/* first byte verbatim */
+	/* First byte verbatim */
 	*bs.dst++ = *bs.src++;
 
-	/* main decompression loop */
+	/* Main decompression loop */
 	while (dst_size < depacked_size) {
 		if (blz_getbit(&bs)) {
-			/* input match length and offset */
+			/* Input match length and offset */
 			unsigned long len = blz_getgamma(&bs) + 2;
 			unsigned long off = blz_getgamma(&bs) - 2;
 
 			off = (off << 8) + (unsigned long) *bs.src++ + 1;
 
-			/* copy match */
+			/* Copy match */
 			{
 				const unsigned char *p = bs.dst - off;
 				unsigned long i;
@@ -108,13 +108,13 @@ blz_depack(const void *src, void *dst, unsigned long depacked_size)
 			dst_size += len;
 		}
 		else {
-			/* copy literal */
+			/* Copy literal */
 			*bs.dst++ = *bs.src++;
 
 			dst_size++;
 		}
 	}
 
-	/* return decompressed size */
+	/* Return decompressed size */
 	return dst_size;
 }

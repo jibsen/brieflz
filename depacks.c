@@ -27,7 +27,7 @@
 
 #include "brieflz.h"
 
-/* internal data structure */
+/* Internal data structure */
 struct blz_state {
 	const unsigned char *src;
 	unsigned char *dst;
@@ -42,21 +42,21 @@ blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 {
 	unsigned int bit;
 
-	/* check if tag is empty */
+	/* Check if tag is empty */
 	if (!bs->bits_left--) {
 		if (bs->src_avail < 2) {
 			return 0;
 		}
 		bs->src_avail -= 2;
 
-		/* load next tag */
+		/* Load next tag */
 		bs->tag = (unsigned int) bs->src[0]
 		       | ((unsigned int) bs->src[1] << 8);
 		bs->src += 2;
 		bs->bits_left = 15;
 	}
 
-	/* shift bit out of tag */
+	/* Shift bit out of tag */
 	bit = (bs->tag >> 15) & 0x01;
 	bs->tag <<= 1;
 
@@ -71,7 +71,7 @@ blz_getgamma_safe(struct blz_state *bs, unsigned long *result)
 	unsigned int bit;
 	unsigned long v = 1;
 
-	/* input gamma2-encoded bits */
+	/* Input gamma2-encoded bits */
 	do {
 		if (!blz_getbit_safe(bs, &bit)) {
 			return 0;
@@ -97,7 +97,7 @@ blz_depack_safe(const void *src, unsigned long src_size,
 	unsigned long dst_size = 1;
 	unsigned int bit;
 
-	/* check for length == 0 */
+	/* Check for empty input */
 	if (depacked_size == 0) {
 		return 0;
 	}
@@ -108,13 +108,13 @@ blz_depack_safe(const void *src, unsigned long src_size,
 	bs.dst_avail = depacked_size;
 	bs.bits_left = 0;
 
-	/* first byte verbatim */
+	/* First byte verbatim */
 	if (!bs.src_avail-- || !bs.dst_avail--) {
 		return BLZ_ERROR;
 	}
 	*bs.dst++ = *bs.src++;
 
-	/* main decompression loop */
+	/* Main decompression loop */
 	while (dst_size < depacked_size) {
 		if (!blz_getbit_safe(&bs, &bit)) {
 			return BLZ_ERROR;
@@ -124,7 +124,7 @@ blz_depack_safe(const void *src, unsigned long src_size,
 			unsigned long len;
 			unsigned long off;
 
-			/* input match length and offset */
+			/* Input match length and offset */
 			if (!blz_getgamma_safe(&bs, &len)) {
 				return BLZ_ERROR;
 			}
@@ -151,7 +151,7 @@ blz_depack_safe(const void *src, unsigned long src_size,
 
 			bs.dst_avail -= len;
 
-			/* copy match */
+			/* Copy match */
 			{
 				const unsigned char *p = bs.dst - off;
 				unsigned long i;
@@ -163,7 +163,7 @@ blz_depack_safe(const void *src, unsigned long src_size,
 			dst_size += len;
 		}
 		else {
-			/* copy literal */
+			/* Copy literal */
 			if (!bs.src_avail-- || !bs.dst_avail--) {
 				return BLZ_ERROR;
 			}
@@ -173,6 +173,6 @@ blz_depack_safe(const void *src, unsigned long src_size,
 		}
 	}
 
-	/* return decompressed size */
+	/* Return decompressed size */
 	return dst_size;
 }
