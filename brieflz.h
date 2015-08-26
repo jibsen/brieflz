@@ -32,6 +32,11 @@
 extern "C" {
 #endif
 
+#define BLZ_VER_MAJOR 1
+#define BLZ_VER_MINOR 0
+#define BLZ_VER_PATCH 5
+#define BLZ_VER_STRING "1.0.5"
+
 #ifdef BLZ_DLL
 #  if defined(_WIN32) || defined(__CYGWIN__)
 #    ifdef BLZ_DLL_EXPORTS
