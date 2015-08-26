@@ -25,7 +25,7 @@ comments. A configuration file is included, so you can simply run `doxygen`
 to generate documentation in HTML format.
 
 If you wish to compile BriefLZ on 16-bit systems, make sure to adjust the
-constants `BLZ_WORKMEM_SIZE` and `BLOCK_SIZE`.
+constants `BLZ_HASH_BITS` and `BLOCK_SIZE`.
 
 [doxygen]: http://www.doxygen.org/
 
