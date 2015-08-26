@@ -111,7 +111,7 @@ blz_depack(const void *src, void *dst, unsigned long depacked_size);
  * Writes at most `depacked_size` bytes to `dst`.
  *
  * @param src pointer to compressed data
- * @param src_size number of bytes to decompress
+ * @param src_size size of compressed data
  * @param dst pointer to where to place decompressed data
  * @param depacked_size size of decompressed data
  * @return size of decompressed data, `BLZ_ERROR` on error
