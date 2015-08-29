@@ -59,21 +59,30 @@ extern "C" {
 #  define BLZ_LOCAL
 #endif
 
+/**
+ * Return value on error.
+ *
+ * @see blz_depack_safe
+ */
 #ifndef BLZ_ERROR
 #  define BLZ_ERROR ((unsigned long) (-1))
 #endif
 
 /**
- * Get required size of workmem buffer.
+ * Get required size of `workmem` buffer.
+ *
+ * @see blz_pack
  *
  * @param src_size number of bytes to compress
- * @return required size in bytes of workmem buffer
+ * @return required size in bytes of `workmem` buffer
  */
 BLZ_API unsigned long
 blz_workmem_size(unsigned long src_size);
 
 /**
  * Get bound on compressed data size.
+ *
+ * @see blz_pack
  *
  * @param src_size number of bytes to compress
  * @return maximum size of compressed data
