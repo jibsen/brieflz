@@ -8,3 +8,4 @@ EXTRACT_ALL            = YES
 INPUT                  = brieflz.h README.md
 GENERATE_LATEX         = NO
 USE_MDFILE_AS_MAINPAGE = README.md
+EXCLUDE_SYMBOLS        = BLZ_API BLZ_LOCAL
