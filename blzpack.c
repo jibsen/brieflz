@@ -134,7 +134,7 @@ get_uint32(const byte *p)
 	     | ((unsigned long) octet(p[3]));
 }
 
-unsigned int
+static unsigned int
 ratio(unsigned long x, unsigned long y)
 {
 	if (x <= ULONG_MAX / 100) {
@@ -151,7 +151,7 @@ ratio(unsigned long x, unsigned long y)
 	return (unsigned int) (x / y);
 }
 
-int
+static int
 compress_file(const char *oldname, const char *packedname)
 {
 	byte header[HEADER_SIZE] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
@@ -237,7 +237,7 @@ compress_file(const char *oldname, const char *packedname)
 	return 0;
 }
 
-int
+static int
 decompress_file(const char *packedname, const char *newname)
 {
 	byte header[HEADER_SIZE];
@@ -347,7 +347,7 @@ decompress_file(const char *packedname, const char *newname)
 	return 0;
 }
 
-void
+static void
 show_syntax(void)
 {
 	printf("Licensed under the zlib license.\n\n"
