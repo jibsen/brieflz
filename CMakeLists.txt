@@ -8,6 +8,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
 if(MSVC)
   add_definitions(/D_CRT_SECURE_NO_WARNINGS)
 else()
