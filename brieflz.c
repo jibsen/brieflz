@@ -53,7 +53,7 @@ struct blz_state {
 };
 
 static void
-blz_putbit(struct blz_state *bs, const int bit)
+blz_putbit(struct blz_state *bs, unsigned int bit)
 {
 	/* Check if tag is full */
 	if (!bs->bits_left--) {
