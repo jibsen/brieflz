@@ -17,7 +17,7 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
 
-add_library(brieflz brieflz.c depack.c depacks.c)
+add_library(brieflz brieflz.c depack.c depacks.c brieflz.h)
 set_target_properties(brieflz PROPERTIES
   VERSION 1.1.0
   SOVERSION 1
@@ -29,7 +29,7 @@ target_compile_definitions(brieflz
   PUBLIC $<$<STREQUAL:$<TARGET_PROPERTY:brieflz,TYPE>,SHARED_LIBRARY>:BLZ_DLL>
 )
 
-add_executable(blzpack blzpack.c)
+add_executable(blzpack example/blzpack.c example/parg.c example/parg.h)
 target_link_libraries(blzpack brieflz)
 
 install(TARGETS brieflz blzpack

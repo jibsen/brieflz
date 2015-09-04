@@ -36,13 +36,13 @@
  *   - 32-bit signature (string "blz",0x1A)
  *   - 32-bit format version (1 in current version)
  *   - 32-bit size of compressed data following header
- *   - 32-bit CRC32 value of compressed data
+ *   - 32-bit CRC32 value of compressed data, or 0
  *   - 32-bit size of original uncompressed data
- *   - 32-bit CRC32 value of original uncompressed data
+ *   - 32-bit CRC32 value of original uncompressed data, or 0
  *
  * All values in the header are stored in network order (big endian, most
- * significant byte first), and are read and written using the get_uint32()
- * and put_uint32() functions.
+ * significant byte first), and are read and written using the read_be32()
+ * and write_be32() functions.
  */
 
 #include <limits.h>
@@ -52,6 +52,7 @@
 #include <time.h>
 
 #include "brieflz.h"
+#include "parg.h"
 
 /*
  * The block-size used to process data.
@@ -114,7 +115,7 @@ blz_crc32(const void *src, size_t src_size, unsigned long crc)
  * Store a 32-bit unsigned value in network order.
  */
 static void
-put_uint32(byte *p, unsigned long val)
+write_be32(byte *p, unsigned long val)
 {
 	p[0] = octet(val >> 24);
 	p[1] = octet(val >> 16);
@@ -126,7 +127,7 @@ put_uint32(byte *p, unsigned long val)
  * Read a 32-bit unsigned value in network order.
  */
 static unsigned long
-get_uint32(const byte *p)
+read_be32(const byte *p)
 {
 	return ((unsigned long) octet(p[0]) << 24)
 	     | ((unsigned long) octet(p[1]) << 16)
@@ -152,7 +153,7 @@ ratio(unsigned long x, unsigned long y)
 }
 
 static int
-compress_file(const char *oldname, const char *packedname)
+compress_file(const char *oldname, const char *packedname, int use_checksum)
 {
 	byte header[HEADER_SIZE] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
 	FILE *oldfile;
@@ -204,10 +205,17 @@ compress_file(const char *oldname, const char *packedname)
 		}
 
 		/* Put block-specific values into header */
-		put_uint32(header + 2 * 4, packedsize);
-		put_uint32(header + 3 * 4, blz_crc32(packed, packedsize, 0));
-		put_uint32(header + 4 * 4, n_read);
-		put_uint32(header + 5 * 4, blz_crc32(data, n_read, 0));
+		write_be32(header + 2 * 4, packedsize);
+		if (use_checksum) {
+			write_be32(header + 3 * 4, blz_crc32(packed, packedsize, 0));
+			write_be32(header + 4 * 4, n_read);
+			write_be32(header + 5 * 4, blz_crc32(data, n_read, 0));
+		}
+		else {
+			write_be32(header + 3 * 4, 0);
+			write_be32(header + 4 * 4, n_read);
+			write_be32(header + 5 * 4, 0);
+		}
 
 		/* Write header and compressed data */
 		fwrite(header, 1, sizeof(header), packedfile);
@@ -238,7 +246,7 @@ compress_file(const char *oldname, const char *packedname)
 }
 
 static int
-decompress_file(const char *packedname, const char *newname)
+decompress_file(const char *packedname, const char *newname, int use_checksum)
 {
 	byte header[HEADER_SIZE];
 	FILE *newfile;
@@ -276,23 +284,24 @@ decompress_file(const char *packedname, const char *newname)
 	/* While we are able to read a header from input file .. */
 	while (fread(header, 1, sizeof(header), packedfile) == sizeof(header)) {
 		size_t hdr_packedsize, hdr_depackedsize, depackedsize;
+		unsigned long crc;
 
 		/* Show a little progress indicator */
 		printf("%c\r", rotator[counter]);
 		counter = (counter + 1) & 0x03;
 
 		/* Verify values in header */
-		if (get_uint32(header + 0 * 4) != 0x626C7A1AUL /* "blz\x1A" */
-		 || get_uint32(header + 1 * 4) != 1
-		 || get_uint32(header + 2 * 4) > max_packed_size
-		 || get_uint32(header + 4 * 4) > BLOCK_SIZE) {
+		if (read_be32(header + 0 * 4) != 0x626C7A1AUL /* "blz\x1A" */
+		 || read_be32(header + 1 * 4) != 1
+		 || read_be32(header + 2 * 4) > max_packed_size
+		 || read_be32(header + 4 * 4) > BLOCK_SIZE) {
 			printf("ERR: invalid header in compressed file\n");
 			return 1;
 		}
 
 		/* Get compressed and original size from header */
-		hdr_packedsize = (size_t) get_uint32(header + 2 * 4);
-		hdr_depackedsize = (size_t) get_uint32(header + 4 * 4);
+		hdr_packedsize = (size_t) read_be32(header + 2 * 4);
+		hdr_depackedsize = (size_t) read_be32(header + 4 * 4);
 
 		/* Read compressed data */
 		if (fread(packed, 1, hdr_packedsize, packedfile) != hdr_packedsize) {
@@ -301,7 +310,10 @@ decompress_file(const char *packedname, const char *newname)
 		}
 
 		/* Check CRC32 of compressed data */
-		if (get_uint32(header + 3 * 4) != blz_crc32(packed, hdr_packedsize, 0)) {
+		crc = read_be32(header + 3 * 4);
+		if (use_checksum
+		 && crc != 0
+		 && crc != blz_crc32(packed, hdr_packedsize, 0)) {
 			printf("ERR: compressed data crc error\n");
 			return 1;
 		}
@@ -316,7 +328,10 @@ decompress_file(const char *packedname, const char *newname)
 		}
 
 		/* Check CRC32 of decompressed data */
-		if (get_uint32(header + 5 * 4) != blz_crc32(data, depackedsize, 0)) {
+		crc = read_be32(header + 5 * 4);
+		if (use_checksum
+		 && crc != 0
+		 && crc != blz_crc32(data, depackedsize, 0)) {
 			printf("ERR: decompressed file crc error\n");
 			return 1;
 		}
@@ -348,25 +363,91 @@ decompress_file(const char *packedname, const char *newname)
 }
 
 static void
-show_syntax(void)
+print_syntax(void)
 {
-	printf("Licensed under the zlib license.\n\n"
-	       "  Syntax:\n\n"
-	       "    compress    :  blzpack c <file> <packed_file>\n"
-	       "    decompress  :  blzpack d <packed_file> <depacked_file>\n\n");
+	printf("Usage: blzpack [options] <infile> <outfile>\n"
+	       "\n"
+	       "Options:\n"
+	       "  -d, --decompress  Decompress\n"
+	       "  -c, --checksum    Use checksums if present\n"
+	       "  -h, --help        Print this help and exit\n"
+	       "  -v, --version     Print version and exit\n"
+	       "\n");
+}
+
+static void
+print_version(void)
+{
+	printf("blzpack " BLZ_VER_STRING "\n"
+	       "\n"
+	       "Copyright (c) 2002-2015 Joergen Ibsen\n"
+	       "\n"
+	       "Licensed under the zlib license.\n"
+	       "There is NO WARRANTY, to the extent permitted by law.\n"
+	       "\n");
 }
 
 int
 main(int argc, char *argv[])
 {
-	/* Show banner */
-	printf("BriefLZ example\n"
-	       "Copyright 2002-2015 Joergen Ibsen (www.ibsensoftware.com)\n\n");
+	struct parg_state ps;
+	int flag_decompress = 0;
+	int flag_checksum = 0;
+	const char *infile = NULL;
+	const char *outfile = NULL;
+	int c;
 
-	/* Check number of arguments */
-	if (argc != 4) {
-		show_syntax();
-		return 1;
+	const struct parg_option long_options[] = {
+		{ "checksum", PARG_NOARG, NULL, 'c' },
+		{ "decompress", PARG_NOARG, NULL, 'd' },
+		{ "help", PARG_NOARG, NULL, 'h' },
+		{ "version", PARG_NOARG, NULL, 'v' },
+		{ 0, 0, 0, 0 }
+	};
+
+	parg_init(&ps);
+
+	while ((c = parg_getopt_long(&ps, argc, argv, "cdhv", long_options, NULL)) != -1) {
+		switch (c) {
+		case 1:
+			if (infile == NULL) {
+				infile = ps.optarg;
+			}
+			else if (outfile == NULL) {
+				outfile = ps.optarg;
+			}
+			else {
+				printf("Too many arguments.\n\n");
+				print_syntax();
+				return EXIT_FAILURE;
+			}
+			break;
+		case 'c':
+			flag_checksum = 1;
+			break;
+		case 'd':
+			flag_decompress = 1;
+			break;
+		case 'h':
+			print_syntax();
+			return EXIT_SUCCESS;
+			break;
+		case 'v':
+			print_version();
+			return EXIT_SUCCESS;
+			break;
+		default:
+			printf("Option error at '%s'\n\n", argv[ps.optind - 1]);
+			print_syntax();
+			return EXIT_FAILURE;
+			break;
+		}
+	}
+
+	if (outfile == NULL) {
+		printf("Too few arguments.\n\n");
+		print_syntax();
+		return EXIT_FAILURE;
 	}
 
 #ifdef __WATCOMC__
@@ -378,22 +459,12 @@ main(int argc, char *argv[])
 	setbuf(stdout, NULL);
 #endif
 
-	/* Check first character of first argument to determine action */
-	if (argv[1][0] && argv[1][1] == '\0') {
-		switch (argv[1][0]) {
-		/* Compress file */
-		case 'c':
-		case 'C':
-			return compress_file(argv[2], argv[3]);
-
-		/* Decompress file */
-		case 'd':
-		case 'D':
-			return decompress_file(argv[2], argv[3]);
-		}
+	if (flag_decompress) {
+		return decompress_file(infile, outfile, flag_checksum);
+	}
+	else {
+		return compress_file(infile, outfile, flag_checksum);
 	}
 
-	/* Show program syntax */
-	show_syntax();
-	return 1;
+	return EXIT_SUCCESS;
 }

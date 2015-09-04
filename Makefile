@@ -8,7 +8,7 @@
 
 .PHONY: clean all
 
-CFLAGS = -Wall -ansi -pedantic -Ofast -flto
+CFLAGS = -Wall -Wextra -ansi -pedantic -Ofast -flto
 LDFLAGS = -fuse-linker-plugin
 
 ifeq ($(OS),Windows_NT)
@@ -18,7 +18,7 @@ ifeq ($(OS),Windows_NT)
   endif
 endif
 
-objs = blzpack.o brieflz.o depack.o
+objs = example/blzpack.o example/parg.o brieflz.o depack.o
 
 target = blzpack
 
