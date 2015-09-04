@@ -57,7 +57,7 @@ blz_getbit_safe(struct blz_state *bs, unsigned int *result)
 	}
 
 	/* Shift bit out of tag */
-	bit = (bs->tag >> 15) & 0x01;
+	bit = (bs->tag & 0x8000) ? 1 : 0;
 	bs->tag <<= 1;
 
 	*result = bit;

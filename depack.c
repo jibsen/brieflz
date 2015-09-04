@@ -50,7 +50,7 @@ blz_getbit(struct blz_state *bs)
 	}
 
 	/* Shift bit out of tag */
-	bit = (bs->tag >> 15) & 0x01;
+	bit = (bs->tag & 0x8000) ? 1 : 0;
 	bs->tag <<= 1;
 
 	return bit;
