@@ -99,6 +99,7 @@ blz_hash4(const unsigned char *s)
 	                 | ((unsigned long) s[1] << 8)
 	                 | ((unsigned long) s[2] << 16)
 	                 | ((unsigned long) s[3] << 24);
+
 	return ((val * 2654435761UL) & 0xFFFFFFFFUL) >> (32 - BLZ_HASH_BITS);
 }
 
