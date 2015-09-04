@@ -133,6 +133,7 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 	/* Initialize lookup[] */
 	{
 		unsigned long i;
+
 		for (i = 0; i < LOOKUP_SIZE; ++i) {
 			lookup[i] = 0;
 		}

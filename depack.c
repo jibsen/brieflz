@@ -100,6 +100,7 @@ blz_depack(const void *src, void *dst, unsigned long depacked_size)
 			{
 				const unsigned char *p = bs.dst - off;
 				unsigned long i;
+
 				for (i = len; i > 0; --i) {
 					*bs.dst++ = *p++;
 				}
