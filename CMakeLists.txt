@@ -19,7 +19,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 add_library(brieflz brieflz.c depack.c depacks.c)
 set_target_properties(brieflz PROPERTIES
-  VERSION 1.0.5
+  VERSION 1.1.0
   SOVERSION 1
   C_VISIBILITY_PRESET hidden
 )

@@ -2,7 +2,7 @@
 BriefLZ - small fast Lempel-Ziv
 ===============================
 
-Version 1.05
+Version 1.1.0
 
 Copyright (c) 2002-2015 Joergen Ibsen
 
