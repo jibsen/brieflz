@@ -68,7 +68,7 @@ blz_putbit(struct blz_state *bs, unsigned int bit)
 	}
 
 	/* Shift bit into tag */
-	bs->tag = (bs->tag << 1) + (bit ? 1 : 0);
+	bs->tag = (bs->tag << 1) + bit;
 }
 
 static void
@@ -82,11 +82,11 @@ blz_putgamma(struct blz_state *bs, unsigned long val)
 	}
 
 	/* Output gamma2-encoded bits */
-	blz_putbit(bs, val & mask);
+	blz_putbit(bs, (val & mask) ? 1 : 0);
 
 	while (mask >>= 1) {
 		blz_putbit(bs, 1);
-		blz_putbit(bs, val & mask);
+		blz_putbit(bs, (val & mask) ? 1 : 0);
 	}
 
 	blz_putbit(bs, 0);
