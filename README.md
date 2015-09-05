@@ -8,6 +8,7 @@ Copyright (c) 2002-2015 Joergen Ibsen
 
 <http://www.ibsensoftware.com/>
 
+[![Build Status](https://travis-ci.org/jibsen/BriefLZ.svg?branch=master)](https://travis-ci.org/jibsen/BriefLZ)
 
 About
 -----
