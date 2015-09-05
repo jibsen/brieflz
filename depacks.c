@@ -77,6 +77,10 @@ blz_getgamma_safe(struct blz_state *bs, unsigned long *result)
 			return 0;
 		}
 
+		if (v & 0x80000000UL) {
+			return 0;
+		}
+
 		v = (v << 1) + bit;
 
 		if (!blz_getbit_safe(bs, &bit)) {
@@ -134,6 +138,10 @@ blz_depack_safe(const void *src, unsigned long src_size,
 
 			len += 2;
 			off -= 2;
+
+			if (off >= 0x00FFFFFFUL) {
+				return BLZ_ERROR;
+			}
 
 			if (!bs.src_avail--) {
 				return BLZ_ERROR;
