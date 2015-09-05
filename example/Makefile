@@ -18,14 +18,17 @@ ifeq ($(OS),Windows_NT)
   endif
 endif
 
-objs = example/blzpack.o example/parg.o brieflz.o depack.o
+objs = blzpack.o parg.o brieflz.o depack.o
 
 target = blzpack
 
 all: $(target)
 
 %.o : %.c
-	$(CC) $(CFLAGS) -I . -o $@ -c $<
+	$(CC) $(CFLAGS) -I .. -o $@ -c $<
+
+%.o : ../%.c
+	$(CC) $(CFLAGS) -I .. -o $@ -c $<
 
 $(target): $(objs)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)

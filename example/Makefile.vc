@@ -16,17 +16,17 @@ LDFLAGS = $(LDFLAGS) /opt:ref,icf /subsystem:console,5.02
 LDFLAGS = $(LDFLAGS) /opt:ref /subsystem:console,5.01
 !ENDIF
 
-objs = example\blzpack.obj example\parg.obj brieflz.obj depack.obj
+objs = blzpack.obj parg.obj brieflz.obj depack.obj
 
 target = blzpack.exe
 
 all: $(target)
 
 .c.obj::
-	$(CC) /MP $(CFLAGS) /I. /c $<
+	$(CC) /MP $(CFLAGS) /I.. /c $<
 
-{example}.c{example}.obj::
-	$(CC) /MP $(CFLAGS) /I. /Foexample\ /c $<
+{..}.c.obj::
+	$(CC) /MP $(CFLAGS) /I.. /c $<
 
 $(target): $(objs)
 	$(CC) $(CFLAGS) /Fe$@ $** /link $(LDFLAGS) $(LDLIBS)
