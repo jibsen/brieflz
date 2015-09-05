@@ -1,8 +1,9 @@
-BriefLZ 1.1.0 (unreleased)
+BriefLZ 1.1.0 (2015.09.05)
 
   * Remove legacy code and update build system
   * Use `BLZ_HASH_BITS` to set workmem size
   * Adjust default block size to 1024k in blzpack
+  * Default to not performing slow CRC computations
 
 BriefLZ 1.05 (unreleased)
 
