@@ -27,10 +27,12 @@ set_target_properties(brieflz PROPERTIES
   C_VISIBILITY_PRESET hidden
 )
 
-target_compile_definitions(brieflz
-  PRIVATE $<$<STREQUAL:$<TARGET_PROPERTY:brieflz,TYPE>,SHARED_LIBRARY>:BLZ_DLL_EXPORTS>
-  PUBLIC $<$<STREQUAL:$<TARGET_PROPERTY:brieflz,TYPE>,SHARED_LIBRARY>:BLZ_DLL>
-)
+if(NOT CMAKE_VERSION VERSION_LESS 2.8.11)
+  target_compile_definitions(brieflz
+    PRIVATE $<$<STREQUAL:$<TARGET_PROPERTY:brieflz,TYPE>,SHARED_LIBRARY>:BLZ_DLL_EXPORTS>
+    PUBLIC $<$<STREQUAL:$<TARGET_PROPERTY:brieflz,TYPE>,SHARED_LIBRARY>:BLZ_DLL>
+  )
+endif()
 
 add_executable(blzpack example/blzpack.c example/parg.c example/parg.h)
 target_link_libraries(blzpack brieflz)
