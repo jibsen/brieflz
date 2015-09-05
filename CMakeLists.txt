@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(brieflz C)
 
-option(BUILD_SHARED_LIBS "Build BriefLZ with shared libraries" OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(BUILD_TEST "Build unit test" ON)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -33,6 +34,14 @@ target_compile_definitions(brieflz
 
 add_executable(blzpack example/blzpack.c example/parg.c example/parg.h)
 target_link_libraries(blzpack brieflz)
+
+if(BUILD_TEST)
+  add_executable(test_brieflz test/test_brieflz.c test/greatest.h brieflz.h)
+  target_link_libraries(test_brieflz brieflz)
+
+  enable_testing()
+  add_test(test_brieflz test_brieflz)
+endif()
 
 install(TARGETS brieflz blzpack
   RUNTIME DESTINATION bin
