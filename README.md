@@ -32,6 +32,9 @@ When using BriefLZ as a shared library (dll on Windows), define `BLZ_DLL`.
 When building BriefLZ as a shared library, define both `BLZ_DLL`and
 `BLZ_DLL_EXPORTS`.
 
+The `example` folder contains a simple command-line program, `blzpack`, that
+can compress and decompress a file using BriefLZ.
+
 [doxygen]: http://www.doxygen.org/
 
 
