@@ -8,7 +8,7 @@ Copyright (c) 2002-2015 Joergen Ibsen
 
 <http://www.ibsensoftware.com/>
 
-[![Build Status](https://travis-ci.org/jibsen/brieflz.svg?branch=master)](https://travis-ci.org/jibsen/brieflz)
+[![Build Status](https://travis-ci.org/jibsen/brieflz.svg?branch=master)](https://travis-ci.org/jibsen/brieflz) [![codecov.io](http://codecov.io/github/jibsen/brieflz/coverage.svg?branch=master)](http://codecov.io/github/jibsen/brieflz?branch=master)
 
 
 About

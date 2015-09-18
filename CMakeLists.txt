@@ -4,6 +4,7 @@ project(brieflz C)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(BUILD_TEST "Build unit test" ON)
+option(BUILD_COVERAGE "Code coverage" OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -16,6 +17,10 @@ if(MSVC)
 else()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -ansi -pedantic")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -ansi -pedantic")
+endif()
+
+if(BUILD_COVERAGE)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage")
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
