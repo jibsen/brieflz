@@ -364,6 +364,24 @@ TEST depack_safe_errors(void)
 	PASS();
 }
 
+/* Test blz_depack_safe on random data */
+TEST depack_safe_random(void)
+{
+	size_t size = ARRAY_SIZE(buffer1) / 2;
+	size_t i, j;
+
+	for (i = 0; i < 1024; ++i) {
+		generate_random(buffer1, size);
+
+		for (j = 0; j < size / 2; ++j) {
+			blz_depack_safe(&buffer1[j], size - j,
+			                buffer3, ARRAY_SIZE(buffer3));
+		}
+	}
+
+	PASS();
+}
+
 SUITE(BriefLZ)
 {
 	workmem = malloc(blz_workmem_size(ARRAY_SIZE(buffer1)));
@@ -380,6 +398,7 @@ SUITE(BriefLZ)
 	RUN_TEST(pack_random_end);
 
 	RUN_TEST(depack_safe_errors);
+	RUN_TEST(depack_safe_random);
 
 	free(workmem);
 }
