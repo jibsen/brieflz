@@ -366,7 +366,7 @@ TEST depack_safe_errors(void)
 
 SUITE(BriefLZ)
 {
-	workmem = malloc(blz_workmem_size(1024));
+	workmem = malloc(blz_workmem_size(ARRAY_SIZE(buffer1)));
 
 	RUN_TEST(pack_nothing);
 	RUN_TEST(depack_nothing);
