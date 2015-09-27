@@ -34,9 +34,25 @@ When building BriefLZ as a shared library, define both `BLZ_DLL`and
 `BLZ_DLL_EXPORTS`.
 
 The `example` folder contains a simple command-line program, `blzpack`, that
-can compress and decompress a file using BriefLZ.
+can compress and decompress a file using BriefLZ. For convenience, the example
+comes with makefiles for GCC and MSVC.
+
+BriefLZ uses [CMake][] to generate build systems. To create one for the tools
+on your platform, and build BriefLZ, use something along the lines of:
+
+~~~sh
+mkdir build
+cd build
+cmake ..
+cmake --build .
+~~~
+
+You can also simply compile the source files and link them into your project.
+CMake just provides an easy way to build and test across various platforms and
+toolsets.
 
 [doxygen]: http://www.doxygen.org/
+[CMake]: http://www.cmake.org/
 
 
 License
