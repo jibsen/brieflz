@@ -73,8 +73,8 @@ static const unsigned char data_alternate[] = {
 };
 
 struct packed_data {
-	size_t src_size;
-	size_t depacked_size;
+	unsigned long src_size;
+	unsigned long depacked_size;
 	const unsigned char data[32];
 };
 
@@ -99,18 +99,18 @@ static const struct packed_data data_errors[] = {
 	{ 4, 4, { 0x42, 0x00, 0x80, 0x00 } },
 };
 
-void *workmem = NULL;
+static void *workmem = NULL;
 
-unsigned char buffer1[4096];
-unsigned char buffer2[4096];
-unsigned char buffer3[4096];
+static unsigned char buffer1[4096];
+static unsigned char buffer2[4096];
+static unsigned char buffer3[4096];
 
 static void generate_random(unsigned char *p, size_t n)
 {
 	size_t i;
 
 	for (i = 0; i < n; ++i) {
-		p[i] = (char) rand();
+		p[i] = (unsigned char) rand();
 	}
 }
 
@@ -151,19 +151,19 @@ TEST pack_zeroes(void)
 
 	for (i = 1; i < ARRAY_SIZE(data_zeroes); ++i) {
 		/* compress first i bytes of data_zeroes[] */
-		res = blz_pack(data_zeroes, buffer1, i, workmem);
+		res = blz_pack(data_zeroes, buffer1, (unsigned long) i, workmem);
 
 		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size(i));
+		ASSERT(res <= blz_max_packed_size((unsigned long) i));
 
 		/* decompress */
-		res = blz_depack_safe(buffer1, res, buffer2, i);
+		res = blz_depack_safe(buffer1, res, buffer2, (unsigned long) i);
 
 		ASSERT(res == i);
 		ASSERT(memcmp(data_zeroes, buffer2, i) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer1, buffer3, i);
+		res = blz_depack(buffer1, buffer3, (unsigned long) i);
 
 		ASSERT(res == i);
 		ASSERT(memcmp(data_zeroes, buffer3, i) == 0);
@@ -182,19 +182,19 @@ TEST pack_numbers(void)
 
 	for (i = 1; i < ARRAY_SIZE(data_numbers); ++i) {
 		/* compress first i bytes of data_numbers[] */
-		size = blz_pack(data_numbers, buffer1, i, workmem);
+		size = blz_pack(data_numbers, buffer1, (unsigned long) i, workmem);
 
 		ASSERT(size != BLZ_ERROR);
-		ASSERT(size <= blz_max_packed_size(i));
+		ASSERT(size <= blz_max_packed_size((unsigned long) i));
 
 		/* decompress */
-		res = blz_depack_safe(buffer1, size, buffer2, i);
+		res = blz_depack_safe(buffer1, size, buffer2, (unsigned long) i);
 
 		ASSERT(res == i);
 		ASSERT(memcmp(data_numbers, buffer2, i) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer1, buffer3, i);
+		res = blz_depack(buffer1, buffer3, (unsigned long) i);
 
 		ASSERT(res == i);
 		ASSERT(memcmp(data_numbers, buffer3, i) == 0);
@@ -213,19 +213,19 @@ TEST pack_alternate(void)
 
 	for (i = 1; i < ARRAY_SIZE(data_alternate); ++i) {
 		/* compress first i bytes of data_alternate[] */
-		size = blz_pack(data_alternate, buffer1, i, workmem);
+		size = blz_pack(data_alternate, buffer1, (unsigned long) i, workmem);
 
 		ASSERT(size != BLZ_ERROR);
-		ASSERT(size <= blz_max_packed_size(i));
+		ASSERT(size <= blz_max_packed_size((unsigned long) i));
 
 		/* decompress */
-		res = blz_depack_safe(buffer1, size, buffer2, i);
+		res = blz_depack_safe(buffer1, size, buffer2, (unsigned long) i);
 
 		ASSERT(res == i);
 		ASSERT(memcmp(data_alternate, buffer2, i) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer1, buffer3, i);
+		res = blz_depack(buffer1, buffer3, (unsigned long) i);
 
 		ASSERT(res == i);
 		ASSERT(memcmp(data_alternate, buffer3, i) == 0);
@@ -251,19 +251,19 @@ TEST pack_random(void)
 			buffer1[size - i + j] = buffer1[j];
 		}
 
-		res = blz_pack(buffer1, buffer2, size, workmem);
+		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
 		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size(size));
+		ASSERT(res <= blz_max_packed_size((unsigned long) size));
 
 		/* decompress */
-		res = blz_depack_safe(buffer2, res, buffer3, size);
+		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer2, buffer3, size);
+		res = blz_depack(buffer2, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
@@ -289,19 +289,19 @@ TEST pack_random_start(void)
 			buffer1[size - i + j] = 0xFF;
 		}
 
-		res = blz_pack(buffer1, buffer2, size, workmem);
+		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
 		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size(size));
+		ASSERT(res <= blz_max_packed_size((unsigned long) size));
 
 		/* decompress */
-		res = blz_depack_safe(buffer2, res, buffer3, size);
+		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer2, buffer3, size);
+		res = blz_depack(buffer2, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
@@ -327,19 +327,19 @@ TEST pack_random_end(void)
 			buffer1[j] = 0xFF;
 		}
 
-		res = blz_pack(buffer1, buffer2, size, workmem);
+		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
 		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size(size));
+		ASSERT(res <= blz_max_packed_size((unsigned long) size));
 
 		/* decompress */
-		res = blz_depack_safe(buffer2, res, buffer3, size);
+		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer2, buffer3, size);
+		res = blz_depack(buffer2, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
@@ -374,8 +374,8 @@ TEST depack_safe_random(void)
 		generate_random(buffer1, size);
 
 		for (j = 0; j < size / 2; ++j) {
-			blz_depack_safe(&buffer1[j], size - j,
-			                buffer3, ARRAY_SIZE(buffer3));
+			blz_depack_safe(&buffer1[j], (unsigned long) (size - j),
+			                buffer3, (unsigned long) ARRAY_SIZE(buffer3));
 		}
 	}
 
@@ -384,7 +384,7 @@ TEST depack_safe_random(void)
 
 SUITE(BriefLZ)
 {
-	workmem = malloc(blz_workmem_size(ARRAY_SIZE(buffer1)));
+	workmem = malloc(blz_workmem_size((unsigned long) ARRAY_SIZE(buffer1)));
 
 	RUN_TEST(pack_nothing);
 	RUN_TEST(depack_nothing);

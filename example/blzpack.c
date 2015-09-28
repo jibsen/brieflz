@@ -196,7 +196,7 @@ compress_file(const char *oldname, const char *packedname, int use_checksum)
 		counter = (counter + 1) & 0x03;
 
 		/* Compress data block */
-		packedsize = blz_pack(data, packed, n_read, workmem);
+		packedsize = blz_pack(data, packed, (unsigned long) n_read, workmem);
 
 		/* Check for compression error */
 		if (packedsize == 0) {
@@ -205,15 +205,15 @@ compress_file(const char *oldname, const char *packedname, int use_checksum)
 		}
 
 		/* Put block-specific values into header */
-		write_be32(header + 2 * 4, packedsize);
+		write_be32(header + 2 * 4, (unsigned long) packedsize);
 		if (use_checksum) {
 			write_be32(header + 3 * 4, blz_crc32(packed, packedsize, 0));
-			write_be32(header + 4 * 4, n_read);
+			write_be32(header + 4 * 4, (unsigned long) n_read);
 			write_be32(header + 5 * 4, blz_crc32(data, n_read, 0));
 		}
 		else {
 			write_be32(header + 3 * 4, 0);
-			write_be32(header + 4 * 4, n_read);
+			write_be32(header + 4 * 4, (unsigned long) n_read);
 			write_be32(header + 5 * 4, 0);
 		}
 
@@ -222,8 +222,8 @@ compress_file(const char *oldname, const char *packedname, int use_checksum)
 		fwrite(packed, 1, packedsize, packedfile);
 
 		/* Sum input and output size */
-		insize += n_read;
-		outsize += packedsize + sizeof(header);
+		insize += (unsigned long) n_read;
+		outsize += (unsigned long) (packedsize + sizeof(header));
 	}
 
 	clocks = clock() - clocks;
@@ -319,7 +319,7 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		}
 
 		/* Decompress data */
-		depackedsize = blz_depack(packed, data, hdr_depackedsize);
+		depackedsize = blz_depack(packed, data, (unsigned long) hdr_depackedsize);
 
 		/* Check for decompression error */
 		if (depackedsize != hdr_depackedsize) {
@@ -340,8 +340,8 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		fwrite(data, 1, depackedsize, newfile);
 
 		/* sum input and output size */
-		insize += hdr_packedsize + sizeof(header);
-		outsize += depackedsize;
+		insize += (unsigned long) (hdr_packedsize + sizeof(header));
+		outsize += (unsigned long) depackedsize;
 	}
 
 	clocks = clock() - clocks;
