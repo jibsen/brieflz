@@ -1,5 +1,5 @@
 ##
-## BriefLZ - small fast Lempel-Ziv
+## blzpack - BriefLZ example
 ##
 ## GCC Makefile
 ##
@@ -8,8 +8,8 @@
 
 .PHONY: clean all
 
-CFLAGS = -Wall -Wextra -ansi -pedantic -Ofast -flto
-LDFLAGS = -fuse-linker-plugin
+CFLAGS = -Wall -Wextra -ansi -pedantic -Ofast -flto -DNDEBUG
+LDFLAGS =
 
 ifeq ($(OS),Windows_NT)
   LDFLAGS += -static

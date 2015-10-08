@@ -1,5 +1,5 @@
 ##
-## BriefLZ - small fast Lempel-Ziv
+## blzpack - BriefLZ example
 ##
 ## Visual C++ Makefile
 ##
@@ -7,7 +7,7 @@
 .SUFFIXES:
 .SUFFIXES: .obj .c
 
-CFLAGS = /W2 /O2 /fp:fast /GL
+CFLAGS = /W2 /O2 /fp:fast /GL /DNDEBUG
 LDFLAGS = /release
 
 !IF "$(PLATFORM)"=="X64" || "$(PLATFORM)"=="x64"
