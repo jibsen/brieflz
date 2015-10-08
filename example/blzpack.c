@@ -156,33 +156,39 @@ static int
 compress_file(const char *oldname, const char *packedname, int use_checksum)
 {
 	byte header[HEADER_SIZE] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
-	FILE *oldfile;
-	FILE *packedfile;
+	FILE *oldfile = NULL;
+	FILE *packedfile = NULL;
+	byte *data = NULL;
+	byte *packed = NULL;
+	byte *workmem = NULL;
 	unsigned long insize = 0, outsize = 0;
 	static const char rotator[] = "-\\|/";
 	unsigned int counter = 0;
 	size_t n_read;
 	clock_t clocks;
-	byte *data, *packed, *workmem;
+	int res = 0;
 
 	/* Allocate memory */
 	if ((data = (byte *) malloc(BLOCK_SIZE)) == NULL
 	 || (packed = (byte *) malloc(blz_max_packed_size(BLOCK_SIZE))) == NULL
 	 || (workmem = (byte *) malloc(blz_workmem_size(BLOCK_SIZE))) == NULL) {
 		printf("ERR: not enough memory\n");
-		return 1;
+		res = 1;
+		goto out;
 	}
 
 	/* Open input file */
 	if ((oldfile = fopen(oldname, "rb")) == NULL) {
 		printf("ERR: unable to open input file\n");
-		return 1;
+		res = 1;
+		goto out;
 	}
 
 	/* Create output file */
 	if ((packedfile = fopen(packedname, "wb")) == NULL) {
 		printf("ERR: unable to open output file\n");
-		return 1;
+		res = 1;
+		goto out;
 	}
 
 	clocks = clock();
@@ -201,7 +207,8 @@ compress_file(const char *oldname, const char *packedname, int use_checksum)
 		/* Check for compression error */
 		if (packedsize == 0) {
 			printf("ERR: an error occured while compressing\n");
-			return 1;
+			res = 1;
+			goto out;
 		}
 
 		/* Put block-specific values into header */
@@ -233,30 +240,43 @@ compress_file(const char *oldname, const char *packedname, int use_checksum)
 	       insize, outsize, ratio(outsize, insize),
 	       (double) clocks / (double) CLOCKS_PER_SEC);
 
+out:
 	/* Close files */
-	fclose(packedfile);
-	fclose(oldfile);
+	if (packedfile != NULL) {
+		fclose(packedfile);
+	}
+	if (oldfile != NULL) {
+		fclose(oldfile);
+	}
 
 	/* Free memory */
-	free(workmem);
-	free(packed);
-	free(data);
+	if (workmem != NULL) {
+		free(workmem);
+	}
+	if (packed != NULL) {
+		free(packed);
+	}
+	if (data != NULL) {
+		free(data);
+	}
 
-	return 0;
+	return res;
 }
 
 static int
 decompress_file(const char *packedname, const char *newname, int use_checksum)
 {
 	byte header[HEADER_SIZE];
-	FILE *newfile;
-	FILE *packedfile;
+	FILE *newfile = NULL;
+	FILE *packedfile = NULL;
+	byte *data = NULL;
+	byte *packed = NULL;
 	unsigned long insize = 0, outsize = 0;
 	static const char rotator[] = "-\\|/";
 	unsigned int counter = 0;
 	clock_t clocks;
-	byte *data, *packed;
 	size_t max_packed_size;
+	int res = 0;
 
 	max_packed_size = blz_max_packed_size(BLOCK_SIZE);
 
@@ -264,19 +284,22 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 	if ((data = (byte *) malloc(BLOCK_SIZE)) == NULL
 	 || (packed = (byte *) malloc(max_packed_size)) == NULL) {
 		printf("ERR: not enough memory\n");
-		return 1;
+		res = 1;
+		goto out;
 	}
 
 	/* Open input file */
 	if ((packedfile = fopen(packedname, "rb")) == NULL) {
 		printf("ERR: unable to open input file\n");
-		return 1;
+		res = 1;
+		goto out;
 	}
 
 	/* Create output file */
 	if ((newfile = fopen(newname, "wb")) == NULL) {
 		printf("ERR: unable to open output file\n");
-		return 1;
+		res = 1;
+		goto out;
 	}
 
 	clocks = clock();
@@ -296,7 +319,8 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		 || read_be32(header + 2 * 4) > max_packed_size
 		 || read_be32(header + 4 * 4) > BLOCK_SIZE) {
 			printf("ERR: invalid header in compressed file\n");
-			return 1;
+			res = 1;
+			goto out;
 		}
 
 		/* Get compressed and original size from header */
@@ -306,7 +330,8 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		/* Read compressed data */
 		if (fread(packed, 1, hdr_packedsize, packedfile) != hdr_packedsize) {
 			printf("ERR: error reading block from compressed file\n");
-			return 1;
+			res = 1;
+			goto out;
 		}
 
 		/* Check CRC32 of compressed data */
@@ -315,7 +340,8 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		 && crc != 0
 		 && crc != blz_crc32(packed, hdr_packedsize, 0)) {
 			printf("ERR: compressed data crc error\n");
-			return 1;
+			res = 1;
+			goto out;
 		}
 
 		/* Decompress data */
@@ -324,7 +350,8 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		/* Check for decompression error */
 		if (depackedsize != hdr_depackedsize) {
 			printf("ERR: an error occured while decompressing\n");
-			return 1;
+			res = 1;
+			goto out;
 		}
 
 		/* Check CRC32 of decompressed data */
@@ -333,7 +360,8 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		 && crc != 0
 		 && crc != blz_crc32(data, depackedsize, 0)) {
 			printf("ERR: decompressed file crc error\n");
-			return 1;
+			res = 1;
+			goto out;
 		}
 
 		/* Write decompressed data */
@@ -351,15 +379,24 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 	       insize, outsize,
 	       (double) clocks / (double) CLOCKS_PER_SEC);
 
+out:
 	/* Close files */
-	fclose(packedfile);
-	fclose(newfile);
+	if (packedfile != NULL) {
+		fclose(packedfile);
+	}
+	if (newfile != NULL) {
+		fclose(newfile);
+	}
 
 	/* Free memory */
-	free(packed);
-	free(data);
+	if (packed != NULL) {
+		free(packed);
+	}
+	if (data != NULL) {
+		free(data);
+	}
 
-	return 0;
+	return res;
 }
 
 static void
