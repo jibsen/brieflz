@@ -313,19 +313,19 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		printf("%c\r", rotator[counter]);
 		counter = (counter + 1) & 0x03;
 
+		/* Get compressed and original size from header */
+		hdr_packedsize = (size_t) read_be32(header + 2 * 4);
+		hdr_depackedsize = (size_t) read_be32(header + 4 * 4);
+
 		/* Verify values in header */
 		if (read_be32(header + 0 * 4) != 0x626C7A1AUL /* "blz\x1A" */
 		 || read_be32(header + 1 * 4) != 1
-		 || read_be32(header + 2 * 4) > max_packed_size
-		 || read_be32(header + 4 * 4) > BLOCK_SIZE) {
+		 || hdr_packedsize > max_packed_size
+		 || hdr_depackedsize > BLOCK_SIZE) {
 			printf("ERR: invalid header in compressed file\n");
 			res = 1;
 			goto out;
 		}
-
-		/* Get compressed and original size from header */
-		hdr_packedsize = (size_t) read_be32(header + 2 * 4);
-		hdr_depackedsize = (size_t) read_be32(header + 4 * 4);
 
 		/* Read compressed data */
 		if (fread(packed, 1, hdr_packedsize, packedfile) != hdr_packedsize) {
