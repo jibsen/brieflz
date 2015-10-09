@@ -25,10 +25,10 @@ target = blzpack
 all: $(target)
 
 %.o : %.c
-	$(CC) $(CFLAGS) -I .. -o $@ -c $<
+	$(CC) $(CFLAGS) -I.. -o $@ -c $<
 
 %.o : ../%.c
-	$(CC) $(CFLAGS) -I .. -o $@ -c $<
+	$(CC) $(CFLAGS) -I.. -o $@ -c $<
 
 $(target): $(objs)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
