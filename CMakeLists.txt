@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 project(brieflz C)
 
+include(CTest)
+
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(BUILD_TEST "Build unit test" ON)
 option(BUILD_COVERAGE "Code coverage" OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -59,7 +60,7 @@ endif()
 add_executable(blzpack example/blzpack.c example/parg.c example/parg.h)
 target_link_libraries(blzpack brieflz)
 
-if(BUILD_TEST)
+if(BUILD_TESTING)
   add_executable(test_brieflz test/test_brieflz.c test/greatest.h brieflz.h)
   target_link_libraries(test_brieflz brieflz)
 
