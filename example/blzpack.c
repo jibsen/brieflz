@@ -57,7 +57,9 @@
 /*
  * The block-size used to process data.
  */
-#define BLOCK_SIZE (1024 * 1024UL)
+#ifndef BLOCK_SIZE
+#  define BLOCK_SIZE (1024 * 1024UL)
+#endif
 
 /*
  * The size of the block header.
