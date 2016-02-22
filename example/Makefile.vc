@@ -7,7 +7,8 @@
 .SUFFIXES:
 .SUFFIXES: .obj .c
 
-CFLAGS = /W2 /O2 /fp:fast /GL /DNDEBUG
+CFLAGS = /W2 /O2 /fp:fast /GL
+CPPFLAGS = /DNDEBUG /I..
 LDFLAGS = /release
 
 !IF "$(PLATFORM)"=="X64" || "$(PLATFORM)"=="x64"
@@ -23,13 +24,18 @@ target = blzpack.exe
 all: $(target)
 
 .c.obj::
-	$(CC) /MP $(CFLAGS) /I.. /c $<
+	$(CC) /MP $(CFLAGS) $(CPPFLAGS) /c $<
 
 {..}.c.obj::
-	$(CC) /MP $(CFLAGS) /I.. /c $<
+	$(CC) /MP $(CFLAGS) $(CPPFLAGS) /c $<
 
 $(target): $(objs)
-	$(CC) $(CFLAGS) /Fe$@ $** /link $(LDFLAGS) $(LDLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) /Fe$@ $** /link $(LDFLAGS) $(LDLIBS)
 
 clean:
 	del /Q $(objs) $(target)
+
+blzpack.o: ..\brieflz.h parg.h
+parg.o: parg.h
+brieflz.o: ..\brieflz.h
+depack.o: ..\brieflz.h
