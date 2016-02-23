@@ -8,7 +8,7 @@ Copyright (c) 2002-2015 Joergen Ibsen
 
 <http://www.ibsensoftware.com/>
 
-[![Build Status](https://travis-ci.org/jibsen/brieflz.svg?branch=master)](https://travis-ci.org/jibsen/brieflz) [![Build Status](https://ci.appveyor.com/api/projects/status/l9vhammx8p8hkrqb?svg=true)](https://ci.appveyor.com/project/jibsen/brieflz) [![codecov.io](http://codecov.io/github/jibsen/brieflz/coverage.svg?branch=master)](http://codecov.io/github/jibsen/brieflz?branch=master)
+[![Build Status](https://travis-ci.org/jibsen/brieflz.svg?branch=master)](https://travis-ci.org/jibsen/brieflz) [![Build status](https://ci.appveyor.com/api/projects/status/l9vhammx8p8hkrqb/branch/master?svg=true)](https://ci.appveyor.com/project/jibsen/brieflz/branch/master) [![codecov.io](http://codecov.io/github/jibsen/brieflz/coverage.svg?branch=master)](http://codecov.io/github/jibsen/brieflz?branch=master)
 
 
 About
