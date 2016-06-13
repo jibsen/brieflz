@@ -410,7 +410,7 @@ print_syntax(void)
 	       "  -d, --decompress  Decompress\n"
 	       "  -c, --checksum    Use checksums if present\n"
 	       "  -h, --help        Print this help and exit\n"
-	       "  -v, --version     Print version and exit\n"
+	       "  -V, --version     Print version and exit\n"
 	       "\n");
 }
 
@@ -440,13 +440,13 @@ main(int argc, char *argv[])
 		{ "checksum", PARG_NOARG, NULL, 'c' },
 		{ "decompress", PARG_NOARG, NULL, 'd' },
 		{ "help", PARG_NOARG, NULL, 'h' },
-		{ "version", PARG_NOARG, NULL, 'v' },
+		{ "version", PARG_NOARG, NULL, 'V' },
 		{ 0, 0, 0, 0 }
 	};
 
 	parg_init(&ps);
 
-	while ((c = parg_getopt_long(&ps, argc, argv, "cdhv", long_options, NULL)) != -1) {
+	while ((c = parg_getopt_long(&ps, argc, argv, "cdhV", long_options, NULL)) != -1) {
 		switch (c) {
 		case 1:
 			if (infile == NULL) {
@@ -471,7 +471,7 @@ main(int argc, char *argv[])
 			print_syntax();
 			return EXIT_SUCCESS;
 			break;
-		case 'v':
+		case 'V':
 			print_version();
 			return EXIT_SUCCESS;
 			break;
