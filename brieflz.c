@@ -3,7 +3,7 @@
  *
  * C packer
  *
- * Copyright (c) 2002-2015 Joergen Ibsen
+ * Copyright (c) 2002-2016 Joergen Ibsen
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages

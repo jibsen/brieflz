@@ -4,7 +4,7 @@ BriefLZ - small fast Lempel-Ziv
 
 Version 1.1.0
 
-Copyright (c) 2002-2015 Joergen Ibsen
+Copyright (c) 2002-2016 Joergen Ibsen
 
 <http://www.ibsensoftware.com/>
 
@@ -60,7 +60,7 @@ License
 
 BriefLZ - small fast Lempel-Ziv
 
-Copyright (c) 2002-2015 Joergen Ibsen
+Copyright (c) 2002-2016 Joergen Ibsen
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages

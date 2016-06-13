@@ -1,7 +1,7 @@
 /*
  * blzpack - BriefLZ example
  *
- * Copyright (c) 2002-2015 Joergen Ibsen
+ * Copyright (c) 2002-2016 Joergen Ibsen
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -419,7 +419,7 @@ print_version(void)
 {
 	printf("blzpack " BLZ_VER_STRING "\n"
 	       "\n"
-	       "Copyright (c) 2002-2015 Joergen Ibsen\n"
+	       "Copyright (c) 2002-2016 Joergen Ibsen\n"
 	       "\n"
 	       "Licensed under the zlib license.\n"
 	       "There is NO WARRANTY, to the extent permitted by law.\n"
