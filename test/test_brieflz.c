@@ -89,6 +89,10 @@ static const struct packed_data data_errors[] = {
 	{ 3, 2, { 0x42, 0x00, 0x00 } },
 	/* unable to read offs byte */
 	{ 3, 5, { 0x42, 0x00, 0x80 } },
+	/* unable to read first bit in offs gamma */
+	{ 4, 5, { 0x42, 0x55, 0x45, 0x42 } },
+	/* unable to read second bit in offs gamma */
+	{ 3, 5, { 0x42, 0xAA, 0x8A } },
 	/* match reading one byte before input */
 	{ 4, 5, { 0x42, 0x00, 0x80, 0x01 } },
 	/* match overflowing g2 encoding */
