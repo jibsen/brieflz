@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.6)
 project(brieflz C)
 
 include(CheckCCompilerFlag)
+include(CheckLibraryExists)
 include(CTest)
 
 # If we are being built as part of another project, we don't want to
@@ -109,6 +110,7 @@ if(NOT BRIEFLZ_BUNDLED_MODE)
   set(BRIEFLZ_INSTALL TRUE)
 
   if(BUILD_COVERAGE)
+    # Set, since check_c_compiler_flag does not work with --coverage
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage")
   elseif(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -180,8 +182,11 @@ if(MSVC)
   set_property(TARGET blzpack APPEND PROPERTY COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS)
 endif()
 
-add_executable(test_brieflz test/test_brieflz.c)
+add_executable(test_brieflz test/test_brieflz.c test/munit.c)
 target_link_libraries(test_brieflz brieflz)
+if(NOT MSVC)
+  set_property(TARGET test_brieflz APPEND_STRING PROPERTY COMPILE_FLAGS "-std=c99")
+endif()
 
 if(CMAKE_VERSION VERSION_LESS 2.8.11)
   include_directories("${BRIEFLZ_INCLUDE_DIRS}")

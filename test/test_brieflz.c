@@ -29,7 +29,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "greatest.h"
+#define MUNIT_ENABLE_ASSERT_ALIASES
+#include "munit.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
@@ -109,145 +110,160 @@ static unsigned char buffer1[4096];
 static unsigned char buffer2[4096];
 static unsigned char buffer3[4096];
 
-static void generate_random(unsigned char *p, size_t n)
-{
-	size_t i;
-
-	for (i = 0; i < n; ++i) {
-		p[i] = (unsigned char) rand();
-	}
-}
-
 /* Test compressing a zero length buffer */
-TEST pack_nothing(void)
+static MunitResult
+pack_nothing(const MunitParameter params[], void* data)
 {
 	unsigned long res;
+
+	(void) params;
+	(void) data;
 
 	/* try to compress 0 bytes, passing read only memory */
 	res = blz_pack(data_numbers, (char *) data_numbers, 0,
 	               (char *) data_numbers);
 
-	ASSERT_EQ(0, res);
-	PASS();
+	assert_ulong(res, ==, 0);
+
+	return MUNIT_OK;
 }
 
 /* Test decompressing a zero length buffer */
-TEST depack_nothing(void)
+static MunitResult
+depack_nothing(const MunitParameter params[], void* data)
 {
 	unsigned long res;
+
+	(void) params;
+	(void) data;
 
 	res = blz_depack_safe(data_numbers, 0, (char *) data_numbers, 0);
 
-	ASSERT_EQ(0, res);
+	assert_ulong(res, ==, 0);
 
 	res = blz_depack(data_numbers, (char *) data_numbers, 0);
 
-	ASSERT_EQ(0, res);
+	assert_ulong(res, ==, 0);
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test compression and decompression of a buffer of zero bytes */
-TEST pack_zeroes(void)
+static MunitResult
+pack_zeroes(const MunitParameter params[], void* data)
 {
 	unsigned long res;
 	size_t i;
+
+	(void) params;
+	(void) data;
 
 	for (i = 1; i < ARRAY_SIZE(data_zeroes); ++i) {
 		/* compress first i bytes of data_zeroes[] */
 		res = blz_pack(data_zeroes, buffer1, (unsigned long) i, workmem);
 
-		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size((unsigned long) i));
+		assert_ulong(res, !=, BLZ_ERROR);
+		assert_ulong(res, <=, blz_max_packed_size((unsigned long) i));
 
 		/* decompress */
 		res = blz_depack_safe(buffer1, res, buffer2, (unsigned long) i);
 
-		ASSERT(res == i);
-		ASSERT(memcmp(data_zeroes, buffer2, i) == 0);
+		assert_ulong(res, ==, i);
+		assert_memory_equal(i, data_zeroes, buffer2);
 
 		/* decompress */
 		res = blz_depack(buffer1, buffer3, (unsigned long) i);
 
-		ASSERT(res == i);
-		ASSERT(memcmp(data_zeroes, buffer3, i) == 0);
+		assert_ulong(res, ==, i);
+		assert_memory_equal(i, data_zeroes, buffer3);
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test compression and all decompressors on a buffer of increasing byte
    values (incompressible) */
-TEST pack_numbers(void)
+static MunitResult
+pack_numbers(const MunitParameter params[], void* data)
 {
 	unsigned long res;
 	unsigned long size;
 	size_t i;
+
+	(void) params;
+	(void) data;
 
 	for (i = 1; i < ARRAY_SIZE(data_numbers); ++i) {
 		/* compress first i bytes of data_numbers[] */
 		size = blz_pack(data_numbers, buffer1, (unsigned long) i, workmem);
 
-		ASSERT(size != BLZ_ERROR);
-		ASSERT(size <= blz_max_packed_size((unsigned long) i));
+		assert_ulong(size, !=, BLZ_ERROR);
+		assert_ulong(size, <=, blz_max_packed_size((unsigned long) i));
 
 		/* decompress */
 		res = blz_depack_safe(buffer1, size, buffer2, (unsigned long) i);
 
-		ASSERT(res == i);
-		ASSERT(memcmp(data_numbers, buffer2, i) == 0);
+		assert_ulong(res, ==, i);
+		assert_memory_equal(i, data_numbers, buffer2);
 
 		/* decompress */
 		res = blz_depack(buffer1, buffer3, (unsigned long) i);
 
-		ASSERT(res == i);
-		ASSERT(memcmp(data_numbers, buffer3, i) == 0);
+		assert_ulong(res, ==, i);
+		assert_memory_equal(i, data_numbers, buffer3);
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test compression and decompression of a buffer of compressible data
    consisting of zero and non-zero bytes */
-TEST pack_alternate(void)
+static MunitResult
+pack_alternate(const MunitParameter params[], void* data)
 {
 	unsigned long res;
 	unsigned long size;
 	size_t i;
 
+	(void) params;
+	(void) data;
+
 	for (i = 1; i < ARRAY_SIZE(data_alternate); ++i) {
 		/* compress first i bytes of data_alternate[] */
 		size = blz_pack(data_alternate, buffer1, (unsigned long) i, workmem);
 
-		ASSERT(size != BLZ_ERROR);
-		ASSERT(size <= blz_max_packed_size((unsigned long) i));
+		assert_ulong(size, !=, BLZ_ERROR);
+		assert_ulong(size, <=, blz_max_packed_size((unsigned long) i));
 
 		/* decompress */
 		res = blz_depack_safe(buffer1, size, buffer2, (unsigned long) i);
 
-		ASSERT(res == i);
-		ASSERT(memcmp(data_alternate, buffer2, i) == 0);
+		assert_ulong(res, ==, i);
+		assert_memory_equal(i, data_alternate, buffer2);
 
 		/* decompress */
 		res = blz_depack(buffer1, buffer3, (unsigned long) i);
 
-		ASSERT(res == i);
-		ASSERT(memcmp(data_alternate, buffer3, i) == 0);
+		assert_ulong(res, ==, i);
+		assert_memory_equal(i, data_alternate, buffer3);
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test compression and decompression of a buffer of random data with an
    expanding area of matching bytes between the front and back */
-TEST pack_random(void)
+static MunitResult
+pack_random(const MunitParameter params[], void* data)
 {
 	size_t size = ARRAY_SIZE(buffer1) / 2;
 	size_t i, j;
 	unsigned long res;
 
-	srand(42);
-	generate_random(buffer1, size);
+	(void) params;
+	(void) data;
+
+	munit_rand_memory(size, buffer1);
 
 	for (i = 0; i < size / 2; ++i) {
 		/* copy first i bytes of buffer1 to end of buffer1 */
@@ -257,35 +273,38 @@ TEST pack_random(void)
 
 		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
-		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size((unsigned long) size));
+		assert_ulong(res, !=, BLZ_ERROR);
+		assert_ulong(res, <=, blz_max_packed_size((unsigned long) size));
 
 		/* decompress */
 		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
 
-		ASSERT(res == size);
-		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+		assert_ulong(res, ==, size);
+		assert_memory_equal(size, buffer1, buffer3);
 
 		/* decompress */
 		res = blz_depack(buffer2, buffer3, (unsigned long) size);
 
-		ASSERT(res == size);
-		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+		assert_ulong(res, ==, size);
+		assert_memory_equal(size, buffer1, buffer3);
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test compression and decompression of a buffer of random data with an
    expanding area of identical bytes at the back */
-TEST pack_random_start(void)
+static MunitResult
+pack_random_start(const MunitParameter params[], void* data)
 {
 	size_t size = ARRAY_SIZE(buffer1) / 2;
 	size_t i, j;
 	unsigned long res;
 
-	srand(42);
-	generate_random(buffer1, size);
+	(void) params;
+	(void) data;
+
+	munit_rand_memory(size, buffer1);
 
 	for (i = 0; i < size / 2; ++i) {
 		/* generate compressible data at end */
@@ -295,35 +314,38 @@ TEST pack_random_start(void)
 
 		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
-		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size((unsigned long) size));
+		assert_ulong(res, !=, BLZ_ERROR);
+		assert_ulong(res, <=, blz_max_packed_size((unsigned long) size));
 
 		/* decompress */
 		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
 
-		ASSERT(res == size);
-		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+		assert_ulong(res, ==, size);
+		assert_memory_equal(size, buffer1, buffer3);
 
 		/* decompress */
 		res = blz_depack(buffer2, buffer3, (unsigned long) size);
 
-		ASSERT(res == size);
-		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+		assert_ulong(res, ==, size);
+		assert_memory_equal(size, buffer1, buffer3);
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test compression and decompression of a buffer of random data with an
    expanding area of identical bytes at the front */
-TEST pack_random_end(void)
+static MunitResult
+pack_random_end(const MunitParameter params[], void* data)
 {
 	size_t size = ARRAY_SIZE(buffer1) / 2;
 	size_t i, j;
 	unsigned long res;
 
-	srand(42);
-	generate_random(buffer1, size);
+	(void) params;
+	(void) data;
+
+	munit_rand_memory(size, buffer1);
 
 	for (i = 0; i < size / 2; ++i) {
 		/* generate compressible data at start */
@@ -333,49 +355,57 @@ TEST pack_random_end(void)
 
 		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
-		ASSERT(res != BLZ_ERROR);
-		ASSERT(res <= blz_max_packed_size((unsigned long) size));
+		assert_ulong(res, !=, BLZ_ERROR);
+		assert_ulong(res, <=, blz_max_packed_size((unsigned long) size));
 
 		/* decompress */
 		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
 
-		ASSERT(res == size);
-		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+		assert_ulong(res, ==, size);
+		assert_memory_equal(size, buffer1, buffer3);
 
 		/* decompress */
 		res = blz_depack(buffer2, buffer3, (unsigned long) size);
 
-		ASSERT(res == size);
-		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+		assert_ulong(res, ==, size);
+		assert_memory_equal(size, buffer1, buffer3);
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test blz_depack_safe on compressed data with errors */
-TEST depack_safe_errors(void)
+static MunitResult
+depack_safe_errors(const MunitParameter params[], void* data)
 {
 	unsigned long res;
 	size_t i;
+
+	(void) params;
+	(void) data;
 
 	for (i = 0; i < ARRAY_SIZE(data_errors); ++i) {
 		res = blz_depack_safe(data_errors[i].data, data_errors[i].src_size,
 		                      buffer1, data_errors[i].depacked_size);
 
-		ASSERT(res == BLZ_ERROR);
+		assert_ulong(res, ==, BLZ_ERROR);
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
 /* Test blz_depack_safe on random data */
-TEST depack_safe_random(void)
+static MunitResult
+depack_safe_random(const MunitParameter params[], void* data)
 {
 	size_t size = ARRAY_SIZE(buffer1) / 2;
 	size_t i, j;
 
+	(void) params;
+	(void) data;
+
 	for (i = 0; i < 1024; ++i) {
-		generate_random(buffer1, size);
+		munit_rand_memory(size, buffer1);
 
 		for (j = 0; j < size / 2; ++j) {
 			blz_depack_safe(&buffer1[j], (unsigned long) (size - j),
@@ -383,35 +413,37 @@ TEST depack_safe_random(void)
 		}
 	}
 
-	PASS();
+	return MUNIT_OK;
 }
 
-SUITE(BriefLZ)
+static MunitTest brieflz_suite_tests[] = {
+	{ "/pack-nothing", pack_nothing, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/depack-nothing", depack_nothing, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/pack-zeroes", pack_zeroes, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/pack-numbers", pack_numbers, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/pack-alternate", pack_alternate, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/pack-random", pack_random, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/pack-random-start", pack_random_start, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/pack-random-end", pack_random_end, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/depack-safe-errors", depack_safe_errors, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ "/depack-safe-random", depack_safe_random, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+	{ NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
+
+static const MunitSuite brieflz_suite = {
+	"/brieflz", brieflz_suite_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE
+};
+
+int
+main(int argc, char *argv[])
 {
-	workmem = malloc(blz_workmem_size((unsigned long) ARRAY_SIZE(buffer1)));
+	int res;
 
-	RUN_TEST(pack_nothing);
-	RUN_TEST(depack_nothing);
+	workmem = munit_malloc(blz_workmem_size((unsigned long) ARRAY_SIZE(buffer1)));
 
-	RUN_TEST(pack_zeroes);
-	RUN_TEST(pack_numbers);
-	RUN_TEST(pack_alternate);
-
-	RUN_TEST(pack_random);
-	RUN_TEST(pack_random_start);
-	RUN_TEST(pack_random_end);
-
-	RUN_TEST(depack_safe_errors);
-	RUN_TEST(depack_safe_random);
+	res = munit_suite_main(&brieflz_suite, NULL, argc, argv);
 
 	free(workmem);
-}
 
-GREATEST_MAIN_DEFS();
-
-int main(int argc, char *argv[])
-{
-	GREATEST_MAIN_BEGIN();
-	RUN_SUITE(BriefLZ);
-	GREATEST_MAIN_END();
+	return res;
 }
