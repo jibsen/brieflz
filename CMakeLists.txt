@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 2.8.6)
 
 project(brieflz C)
 
@@ -38,14 +38,15 @@ include(CTest)
 mark_as_advanced(
   BRIEFLZ_BUNDLED_MODE
   BRIEFLZ_TEST_ENABLE
-  BRIEFLZ_TEST_PREFIX)
+  BRIEFLZ_TEST_PREFIX
+)
 
 # Library version
 #
 # This should be incremented with every release.  See semver.org.
-set (BRIEFLZ_VERSION_MAJOR    1)
-set (BRIEFLZ_VERSION_MINOR    1)
-set (BRIEFLZ_VERSION_REVISION 0)
+set(BRIEFLZ_VERSION_MAJOR    1)
+set(BRIEFLZ_VERSION_MINOR    1)
+set(BRIEFLZ_VERSION_REVISION 0)
 
 # ABI version
 #
@@ -71,13 +72,26 @@ set (BRIEFLZ_VERSION_REVISION 0)
 # part (API changes are a bit more complicated since we should change
 # the library and pkg-config names and *can* reset these to whatever
 # we want, but we don't *have* to).
-set (BRIEFLZ_SOVERSION_CURRENT  ${BRIEFLZ_VERSION_MAJOR})
-set (BRIEFLZ_SOVERSION_REVISION ${BRIEFLZ_VERSION_MINOR})
-set (BRIEFLZ_SOVERSION_AGE      ${BRIEFLZ_VERSION_REVISION})
+set(BRIEFLZ_SOVERSION_CURRENT  ${BRIEFLZ_VERSION_MAJOR})
+set(BRIEFLZ_SOVERSION_REVISION ${BRIEFLZ_VERSION_MINOR})
+set(BRIEFLZ_SOVERSION_AGE      ${BRIEFLZ_VERSION_REVISION})
 
 mark_as_advanced(
   BRIEFLZ_VERSION_MAJOR BRIEFLZ_VERSION_MINOR BRIEFLZ_VERSION_REVISION
-  BRIEFLZ_SOVERSION_CURRENT BRIEFLZ_SOVERSION_REVISION BRIEFLZ_SOVERSION_AGE)
+  BRIEFLZ_SOVERSION_CURRENT BRIEFLZ_SOVERSION_REVISION BRIEFLZ_SOVERSION_AGE
+)
+
+# Add flags that compiler accepts to var
+function(_add_c_compiler_flags var)
+  foreach(flag ${ARGN})
+    string(REGEX REPLACE "[^a-zA-Z0-9]+" "_" flag_var "CFLAG_${flag}")
+    check_c_compiler_flag("${flag}" ${flag_var})
+    if(${flag_var})
+      set(${var} "${${var}} ${flag}")
+    endif()
+  endforeach()
+  set(${var} "${${var}}" PARENT_SCOPE)
+endfunction()
 
 if(NOT BRIEFLZ_BUNDLED_MODE)
   option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -95,7 +109,7 @@ if(NOT BRIEFLZ_BUNDLED_MODE)
   set(BRIEFLZ_INSTALL TRUE)
 
   if(BUILD_COVERAGE)
-    set(CMAKE_C_FLAGS "-g -O0 --coverage")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage")
   elseif(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
   endif()
@@ -112,7 +126,7 @@ mark_as_advanced(BRIEFLZ_LIBRARY_TYPE BRIEFLZ_TEST_ENABLE)
 # with CMake < 2.8.11.  For CMake >= 2.8.11, you can just add the
 # brieflz target and be done with it.
 set(BRIEFLZ_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}")
-if(BRIEFLZ_LIBRARY_TYPE STREQUAL SHARED)
+if(BRIEFLZ_LIBRARY_TYPE STREQUAL "SHARED")
   set(BRIEFLZ_DEFINITIONS "BLZ_DLL")
 else()
   set(BRIEFLZ_DEFINITIONS "")
@@ -131,8 +145,9 @@ set_property(TARGET brieflz APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${BRI
 set_target_properties(brieflz PROPERTIES
   VERSION ${BRIEFLZ_VERSION_MAJOR}.${BRIEFLZ_VERSION_MINOR}.${BRIEFLZ_VERSION_REVISION}
   SOVERSION "${BRIEFLZ_SOVERSION_CURRENT}.${BRIEFLZ_SOVERSION_REVISION}.${BRIEFLZ_SOVERSION_AGE}"
-  POSITION_INDEPENDENT_CODE TRUE)
-if(BRIEFLZ_LIBRARY_TYPE STREQUAL SHARED)
+  POSITION_INDEPENDENT_CODE TRUE
+)
+if(BRIEFLZ_LIBRARY_TYPE STREQUAL "SHARED")
   set_property(TARGET brieflz APPEND PROPERTY COMPILE_DEFINITIONS BLZ_DLL BLZ_DLL_EXPORTS)
   set_property(TARGET brieflz APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS BLZ_DLL)
   set_target_properties(brieflz PROPERTIES C_VISIBILITY_PRESET hidden)
@@ -141,35 +156,29 @@ endif()
 set(BRIEFLZ_COMPILE_FLAGS)
 mark_as_advanced(BRIEFLZ_COMPILE_FLAGS)
 if(MSVC)
-  set(BRIEFLZ_COMPILE_FLAGS "${BRIEFLZ_COMPILE_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
-  if(NOT MSVC_VERSION LESS 1700)
-    set(BRIEFLZ_COMPILE_FLAGS "${BRIEFLZ_COMPILE_FLAGS} /analyze")
-  endif()
+  _add_c_compiler_flags(BRIEFLZ_COMPILE_FLAGS "/analyze")
 elseif(CMAKE_COMPILER_IS_GNUCC)
-  foreach(flag -Wall
-      -Wextra
-      -pedantic
-      -Wshadow
-      -Wpointer-arith
-      -Wcast-qual
-      -Wcast-align
-      -Wstrict-prototypes
-      -Wmissing-prototypes)
-    string(REGEX REPLACE "[^a-zA-Z0-9]+" "_" flag_var "CFLAG_${flag}")
-    check_c_compiler_flag("${flag}" ${flag_var})
-    if(${flag_var})
-      set(BRIEFLZ_COMPILE_FLAGS "${BRIEFLZ_COMPILE_FLAGS} ${flag}")
-    endif()
-    unset(flag_var)
-  endforeach()
-  unset(gcc_warning_flags)
+  _add_c_compiler_flags(BRIEFLZ_COMPILE_FLAGS
+    -Wall
+    -Wextra
+    -pedantic
+    -Wshadow
+    -Wpointer-arith
+    -Wcast-qual
+    -Wcast-align
+    -Wstrict-prototypes
+    -Wmissing-prototypes
+  )
 elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
-  set(BRIEFLZ_COMPILE_FLAGS "${BRIEFLZ_COMPILE_FLAGS} -Weverything -pedantic")
+  _add_c_compiler_flags(BRIEFLZ_COMPILE_FLAGS "-Weverything;-pedantic")
 endif()
 set_property(TARGET brieflz APPEND_STRING PROPERTY COMPILE_FLAGS "${BRIEFLZ_COMPILE_FLAGS}")
 
 add_executable(blzpack example/blzpack.c example/parg.c)
 target_link_libraries(blzpack brieflz)
+if(MSVC)
+  set_property(TARGET blzpack APPEND PROPERTY COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS)
+endif()
 
 add_executable(test_brieflz test/test_brieflz.c)
 target_link_libraries(test_brieflz brieflz)
@@ -186,15 +195,17 @@ if(BRIEFLZ_TEST_ENABLE)
 endif()
 
 if(BRIEFLZ_INSTALL)
-  include (GNUInstallDirs)
+  include(GNUInstallDirs)
 
   install(TARGETS brieflz blzpack
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  )
 
   if(BRIEFLZ_TEST_ENABLE)
     install(TARGETS test_brieflz
-      RUNTIME DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/brieflz")
+      RUNTIME DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/brieflz"
+    )
   endif()
 endif()
