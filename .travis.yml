@@ -12,7 +12,7 @@ before_script:
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_COVERAGE=ON ..
 
-script: cmake --build . && ctest -V .
+script: cmake --build . && ctest -V -C Debug
 
 after_success:
   - gcov CMakeFiles/brieflz.dir/brieflz.c.gcno -o CMakeFiles/brieflz.dir
