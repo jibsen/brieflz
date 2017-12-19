@@ -1,6 +1,6 @@
 language: c
 sudo: false
-dist: trusty
+dist: xenial
 
 matrix:
   include:
@@ -16,7 +16,8 @@ matrix:
           packages:
             - gcc-6
             - g++-6
-    - env: BUILD_TYPE=coverage
+    - env: JUST_PLAIN_GCC=true
+    - # env: BUILD_TYPE=coverage
 
 before_install:
   - if [ "${BUILD_TYPE}" = "coverage" ]; then pip install --user codecov; fi
