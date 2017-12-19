@@ -1,0 +1,22 @@
+option('lib_type',
+  type : 'combo',
+  choices : ['default', 'shared', 'static'],
+  value : 'default',
+  description : 'Library type (default uses default_library)'
+)
+option('build_install',
+  type : 'combo',
+  choices : ['default', 'true', 'false'],
+  value : 'default',
+  description : 'Build install (default is true unless static subproject)'
+)
+option('build_tests',
+  type: 'boolean',
+  value: true,
+  description : 'Build tests'
+)
+option('install_tests',
+  type: 'boolean',
+  value: false,
+  description : 'Install tests'
+)
