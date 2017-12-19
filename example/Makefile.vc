@@ -35,7 +35,7 @@ $(target): $(objs)
 clean:
 	del /Q $(objs) $(target)
 
-blzpack.o: ..\brieflz.h parg.h
-parg.o: parg.h
-brieflz.o: ..\brieflz.h
-depack.o: ..\brieflz.h
+blzpack.obj: ..\brieflz.h parg.h
+parg.obj: parg.h
+brieflz.obj: ..\brieflz.h
+depack.obj: ..\brieflz.h
