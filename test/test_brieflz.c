@@ -105,9 +105,9 @@ static const struct packed_data data_errors[] = {
 
 static void *workmem = NULL;
 
-static unsigned char buffer1[4096];
-static unsigned char buffer2[4096];
-static unsigned char buffer3[4096];
+static unsigned char buffer1[4093];
+static unsigned char buffer2[8191];
+static unsigned char buffer3[4093];
 
 static void generate_random(unsigned char *p, size_t n)
 {
@@ -242,7 +242,8 @@ TEST pack_alternate(void)
    expanding area of matching bytes between the front and back */
 TEST pack_random(void)
 {
-	size_t size = ARRAY_SIZE(buffer1) / 2;
+	unsigned char *p = NULL;
+	size_t size = ARRAY_SIZE(buffer1);
 	size_t i, j;
 	unsigned long res;
 
@@ -250,27 +251,42 @@ TEST pack_random(void)
 	generate_random(buffer1, size);
 
 	for (i = 0; i < size / 2; ++i) {
+
 		/* copy first i bytes of buffer1 to end of buffer1 */
 		for (j = 0; j < i; ++j) {
 			buffer1[size - i + j] = buffer1[j];
 		}
 
+		/* compress */
 		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
 
+		p = malloc(res);
+
+		assert(p != NULL);
+
+		/* compress again, to buffer of exact size */
+		res = blz_pack(buffer1, p, (unsigned long) size, workmem);
+
+		ASSERT(res != BLZ_ERROR);
+		ASSERT(res <= blz_max_packed_size((unsigned long) size));
+
 		/* decompress */
-		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
+		res = blz_depack_safe(p, res, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer2, buffer3, (unsigned long) size);
+		res = blz_depack(p, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+
+		free(p);
+		p = NULL;
 	}
 
 	PASS();
@@ -280,7 +296,8 @@ TEST pack_random(void)
    expanding area of identical bytes at the back */
 TEST pack_random_start(void)
 {
-	size_t size = ARRAY_SIZE(buffer1) / 2;
+	unsigned char *p = NULL;
+	size_t size = ARRAY_SIZE(buffer1);
 	size_t i, j;
 	unsigned long res;
 
@@ -293,22 +310,36 @@ TEST pack_random_start(void)
 			buffer1[size - i + j] = 0xFF;
 		}
 
+		/* compress */
 		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
 
+		p = malloc(res);
+
+		assert(p != NULL);
+
+		/* compress again, to buffer of exact size */
+		res = blz_pack(buffer1, p, (unsigned long) size, workmem);
+
+		ASSERT(res != BLZ_ERROR);
+		ASSERT(res <= blz_max_packed_size((unsigned long) size));
+
 		/* decompress */
-		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
+		res = blz_depack_safe(p, res, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer2, buffer3, (unsigned long) size);
+		res = blz_depack(p, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+
+		free(p);
+		p = NULL;
 	}
 
 	PASS();
@@ -318,7 +349,8 @@ TEST pack_random_start(void)
    expanding area of identical bytes at the front */
 TEST pack_random_end(void)
 {
-	size_t size = ARRAY_SIZE(buffer1) / 2;
+	unsigned char *p = NULL;
+	size_t size = ARRAY_SIZE(buffer1);
 	size_t i, j;
 	unsigned long res;
 
@@ -331,22 +363,36 @@ TEST pack_random_end(void)
 			buffer1[j] = 0xFF;
 		}
 
+		/* compress */
 		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
 
+		p = malloc(res);
+
+		assert(p != NULL);
+
+		/* compress again, to buffer of exact size */
+		res = blz_pack(buffer1, p, (unsigned long) size, workmem);
+
+		ASSERT(res != BLZ_ERROR);
+		ASSERT(res <= blz_max_packed_size((unsigned long) size));
+
 		/* decompress */
-		res = blz_depack_safe(buffer2, res, buffer3, (unsigned long) size);
+		res = blz_depack_safe(p, res, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
 
 		/* decompress */
-		res = blz_depack(buffer2, buffer3, (unsigned long) size);
+		res = blz_depack(p, buffer3, (unsigned long) size);
 
 		ASSERT(res == size);
 		ASSERT(memcmp(buffer1, buffer3, size) == 0);
+
+		free(p);
+		p = NULL;
 	}
 
 	PASS();
@@ -389,6 +435,8 @@ TEST depack_safe_random(void)
 SUITE(BriefLZ)
 {
 	workmem = malloc(blz_workmem_size((unsigned long) ARRAY_SIZE(buffer1)));
+
+	assert(workmem != NULL);
 
 	RUN_TEST(pack_nothing);
 	RUN_TEST(depack_nothing);
