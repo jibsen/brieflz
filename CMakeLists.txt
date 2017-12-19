@@ -108,6 +108,10 @@ if(NOT BRIEFLZ_BUNDLED_MODE)
 
   set(BRIEFLZ_INSTALL TRUE)
 
+  if(ENABLE_SANITIZER)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1 -fno-omit-frame-pointer -fsanitize=${ENABLE_SANITIZER}")
+  endif()
+
   if(BUILD_COVERAGE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage")
   elseif(NOT CMAKE_BUILD_TYPE)
