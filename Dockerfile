@@ -1,8 +1,8 @@
 FROM alpine:3.7
 
-RUN apk add --no-cache gcc meson
+RUN apk add --no-cache gcc git meson
 
 WORKDIR /src
-RUN git clone -b add-meson --depth 1 https://github.com/jibsen/brieflz.git
+RUN git clone --depth 5 -b add-meson https://github.com/jibsen/brieflz.git
 WORKDIR brieflz/build
 RUN meson .. && ninja && ninja test
