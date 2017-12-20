@@ -1,56 +1,15 @@
 language: c
-sudo: false
-dist: xenial
+sudo: required
+dist: trusty
 
-matrix:
-  include:
-    - compiler: clang
-      env: BUILD_TYPE=asan
-    - compiler: clang
-      env: BUILD_TYPE=ubsan
-    - compiler: gcc-6
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - gcc-6
-            - g++-6
-    - env: JUST_PLAIN_GCC=true
-    - # env: BUILD_TYPE=coverage
+services:
+  - docker
 
 before_install:
-  - if [ "${BUILD_TYPE}" = "coverage" ]; then pip install --user codecov; fi
+  - docker pull alpine:3.7
 
-before_script:
-  - mkdir -p build
-  - cd build
-  - |-
-    case "${BUILD_TYPE}" in
-      "coverage")
-        cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_COVERAGE=ON ..
-        ;;
-      "asan")
-        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=address ..
-        ;;
-      "ubsan")
-        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=undefined ..
-        ;;
-      *)
-        cmake ..
-        ;;
-    esac
-
-script: make VERBOSE=1 && make test
-
-after_success:
-  - |-
-    if [ "${BUILD_TYPE}" = "coverage" ]; then
-      gcov CMakeFiles/brieflz.dir/brieflz.c.gcno -o CMakeFiles/brieflz.dir
-      gcov CMakeFiles/brieflz.dir/depack.c.gcno -o CMakeFiles/brieflz.dir
-      gcov CMakeFiles/brieflz.dir/depacks.c.gcno -o CMakeFiles/brieflz.dir
-      codecov -X gcov
-    fi
+script:
+ - docker build .
 
 notifications:
   email: false
