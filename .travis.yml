@@ -4,6 +4,11 @@ dist: xenial
 
 matrix:
   include:
+    - env: BUILD_TYPE=meson
+      addons:
+        apt:
+          packages:
+            - python3-pip
     - compiler: clang
       env: BUILD_TYPE=asan
     - compiler: clang
@@ -21,6 +26,15 @@ matrix:
 
 before_install:
   - if [ "${BUILD_TYPE}" = "coverage" ]; then pip install --user codecov; fi
+  - |-
+    if [ "${BUILD_TYPE}" = "meson" ]; then
+      git clone https://github.com/ninja-build/ninja.git
+      cd ninja
+      ./configure.py --bootstrap
+      cp ninja ~/.local/bin/
+      cd ..
+      pip3 install --user meson
+    fi
 
 before_script:
   - mkdir -p build
@@ -35,6 +49,9 @@ before_script:
         ;;
       "ubsan")
         cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=undefined ..
+        ;;
+      "meson")
+        meson ..
         ;;
       *)
         cmake ..
