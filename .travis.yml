@@ -26,15 +26,13 @@ matrix:
     # - # env: BUILD_TYPE=coverage
 
 before_install:
-  - which pip3
-  - pip3 --version
   - if [ "${BUILD_TYPE}" = "coverage" ]; then pip install --user codecov; fi
   - |-
     if [ "${BUILD_TYPE}" = "meson" ]; then
       git clone https://github.com/ninja-build/ninja.git
       cd ninja
       ./configure.py --bootstrap
-      cp ninja ~/.local/bin/
+      export PATH=$PATH:$PWD
       cd ..
       pip3 install --user meson
     fi
@@ -61,7 +59,7 @@ before_script:
         ;;
     esac
 
-script: make VERBOSE=1 && make test
+script: if [ "${BUILD_TYPE}" = "meson" ]; then ninja && ninja test; else make VERBOSE=1 && make test; fi
 
 after_success:
   - |-
