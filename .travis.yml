@@ -9,22 +9,24 @@ matrix:
         apt:
           packages:
             - python3-pip
-    - compiler: clang
-      env: BUILD_TYPE=asan
-    - compiler: clang
-      env: BUILD_TYPE=ubsan
-    - compiler: gcc-6
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - gcc-6
-            - g++-6
-    - env: JUST_PLAIN_GCC=true
-    - # env: BUILD_TYPE=coverage
+    # - compiler: clang
+    #   env: BUILD_TYPE=asan
+    # - compiler: clang
+    #   env: BUILD_TYPE=ubsan
+    # - compiler: gcc-6
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #       packages:
+    #         - gcc-6
+    #         - g++-6
+    # - env: JUST_PLAIN_GCC=true
+    # - # env: BUILD_TYPE=coverage
 
 before_install:
+  - which pip3
+  - pip3 --version
   - if [ "${BUILD_TYPE}" = "coverage" ]; then pip install --user codecov; fi
   - |-
     if [ "${BUILD_TYPE}" = "meson" ]; then
