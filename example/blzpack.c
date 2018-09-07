@@ -489,7 +489,7 @@ main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-#ifdef __WATCOMC__
+#if defined(__WATCOMC__) || defined(__GNUC__)
 	/* Unlike BC, which unbuffers stdout if it is a device, OpenWatcom 1.2
 	   line buffers stdout; this prevents "rotator" trick based on output
 	   of "\r" and writing new line over previous. To make rotator work
