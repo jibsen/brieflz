@@ -347,7 +347,9 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 		}
 
 		/* Decompress data */
-		depackedsize = blz_depack(packed, data, (unsigned long) hdr_depackedsize);
+		depackedsize = blz_depack_safe(
+				packed, (unsigned long) hdr_packedsize,
+				data, (unsigned long) hdr_depackedsize);
 
 		/* Check for decompression error */
 		if (depackedsize != hdr_depackedsize) {
