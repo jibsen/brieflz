@@ -73,19 +73,13 @@ unsigned long
 blz_depack(const void *src, void *dst, unsigned long depacked_size)
 {
 	struct blz_state bs;
-	unsigned long dst_size = 1;
-
-	/* Check for empty input */
-	if (depacked_size == 0) {
-		return 0;
-	}
+	unsigned long dst_size = 0;
 
 	bs.src = (const unsigned char *) src;
 	bs.dst = (unsigned char *) dst;
-	bs.bits_left = 0;
-
-	/* First byte verbatim */
-	*bs.dst++ = *bs.src++;
+	/* Initialise to one bit left in tag; that bit is zero (a literal). */
+	bs.bits_left = 1;
+	bs.tag = 0;
 
 	/* Main decompression loop */
 	while (dst_size < depacked_size) {
