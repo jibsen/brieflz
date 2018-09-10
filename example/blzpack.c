@@ -27,8 +27,10 @@
  * This is a simple example packer, which can compress and decompress a
  * single file using BriefLZ.
  *
- * It processes the data in blocks of 1024k. Adjust BLOCK_SIZE to 56k or less
- * to compile for 16-bit.
+ * It processes the data in blocks of 1024k. Adjust DEFAULT_BLOCK_SIZE to
+ * 56k or less to compile for 16-bit. The user can supply a block size with
+ * the -b option. If decompressing and a larger block occurs in the file,
+ * the decompression fails with an error indicating that block's size.
  *
  * Each compressed block starts with a 24 byte header with the following
  * format:
@@ -57,8 +59,8 @@
 /*
  * The block-size used to process data.
  */
-#ifndef BLOCK_SIZE
-#  define BLOCK_SIZE (1024 * 1024UL)
+#ifndef DEFAULT_BLOCK_SIZE
+#  define DEFAULT_BLOCK_SIZE (1024 * 1024UL)
 #endif
 
 /*
@@ -155,7 +157,8 @@ ratio(unsigned long x, unsigned long y)
 }
 
 static int
-compress_file(const char *oldname, const char *packedname, int use_checksum)
+compress_file(const char *oldname, const char *packedname, int use_checksum,
+		unsigned long blocksize)
 {
 	byte header[HEADER_SIZE] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
 	FILE *oldfile = NULL;
@@ -171,9 +174,9 @@ compress_file(const char *oldname, const char *packedname, int use_checksum)
 	int res = 0;
 
 	/* Allocate memory */
-	if ((data = (byte *) malloc(BLOCK_SIZE)) == NULL
-	 || (packed = (byte *) malloc(blz_max_packed_size(BLOCK_SIZE))) == NULL
-	 || (workmem = (byte *) malloc(blz_workmem_size(BLOCK_SIZE))) == NULL) {
+	if ((data = (byte *) malloc(blocksize)) == NULL
+	 || (packed = (byte *) malloc(blz_max_packed_size(blocksize))) == NULL
+	 || (workmem = (byte *) malloc(blz_workmem_size(blocksize))) == NULL) {
 		printf("ERR: not enough memory\n");
 		res = 1;
 		goto out;
@@ -196,7 +199,7 @@ compress_file(const char *oldname, const char *packedname, int use_checksum)
 	clocks = clock();
 
 	/* While we are able to read data from input file .. */
-	while ((n_read = fread(data, 1, BLOCK_SIZE, oldfile)) > 0) {
+	while ((n_read = fread(data, 1, blocksize, oldfile)) > 0) {
 		size_t packedsize;
 
 		/* Show a little progress indicator */
@@ -266,7 +269,8 @@ out:
 }
 
 static int
-decompress_file(const char *packedname, const char *newname, int use_checksum)
+decompress_file(const char *packedname, const char *newname, int use_checksum,
+		unsigned long blocksize)
 {
 	byte header[HEADER_SIZE];
 	FILE *newfile = NULL;
@@ -280,10 +284,10 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 	size_t max_packed_size;
 	int res = 0;
 
-	max_packed_size = blz_max_packed_size(BLOCK_SIZE);
+	max_packed_size = blz_max_packed_size(blocksize);
 
 	/* Allocate memory */
-	if ((data = (byte *) malloc(BLOCK_SIZE)) == NULL
+	if ((data = (byte *) malloc(blocksize)) == NULL
 	 || (packed = (byte *) malloc(max_packed_size)) == NULL) {
 		printf("ERR: not enough memory\n");
 		res = 1;
@@ -321,10 +325,17 @@ decompress_file(const char *packedname, const char *newname, int use_checksum)
 
 		/* Verify values in header */
 		if (read_be32(header + 0 * 4) != 0x626C7A1AUL /* "blz\x1A" */
-		 || read_be32(header + 1 * 4) != 1
-		 || hdr_packedsize > max_packed_size
-		 || hdr_depackedsize > BLOCK_SIZE) {
+		 || read_be32(header + 1 * 4) != 1) {
 			printf("ERR: invalid header in compressed file\n");
+			res = 1;
+			goto out;
+		}
+
+		/* Check blocksize is sufficient */
+		if (hdr_packedsize > max_packed_size
+		 || hdr_depackedsize > blocksize) {
+			printf("ERR: compressed file requires blocksize"
+				" >= %lu bytes\n", hdr_depackedsize);
 			res = 1;
 			goto out;
 		}
@@ -409,6 +420,7 @@ print_syntax(void)
 	       "Options:\n"
 	       "  -d, --decompress  Decompress\n"
 	       "  -c, --checksum    Use checksums if present\n"
+	       "  -b, --blocksize=N Set block size\n"
 	       "  -h, --help        Print this help and exit\n"
 	       "  -V, --version     Print version and exit\n"
 	       "\n");
@@ -432,8 +444,10 @@ main(int argc, char *argv[])
 	struct parg_state ps;
 	int flag_decompress = 0;
 	int flag_checksum = 0;
+	unsigned long blocksize = DEFAULT_BLOCK_SIZE;
 	const char *infile = NULL;
 	const char *outfile = NULL;
+	char *endptr = NULL;
 	int c;
 
 	const struct parg_option long_options[] = {
@@ -441,12 +455,13 @@ main(int argc, char *argv[])
 		{ "decompress", PARG_NOARG, NULL, 'd' },
 		{ "help", PARG_NOARG, NULL, 'h' },
 		{ "version", PARG_NOARG, NULL, 'V' },
+		{ "blocksize", PARG_REQARG, NULL, 'b' },
 		{ 0, 0, 0, 0 }
 	};
 
 	parg_init(&ps);
 
-	while ((c = parg_getopt_long(&ps, argc, argv, "cdhV", long_options, NULL)) != -1) {
+	while ((c = parg_getopt_long(&ps, argc, argv, "cdhVb:", long_options, NULL)) != -1) {
 		switch (c) {
 		case 1:
 			if (infile == NULL) {
@@ -475,6 +490,15 @@ main(int argc, char *argv[])
 			print_version();
 			return EXIT_SUCCESS;
 			break;
+		case 'b':
+			blocksize = strtol(ps.optarg, &endptr, 10);
+			if (blocksize == 0 || *endptr != 0) {
+				printf("Invalid argument to --blocksize: "
+					"'%s'\n\n", ps.optarg);
+				print_syntax();
+				return EXIT_FAILURE;
+			}
+			break;
 		default:
 			printf("Option error at '%s'\n\n", argv[ps.optind - 1]);
 			print_syntax();
@@ -499,10 +523,12 @@ main(int argc, char *argv[])
 #endif
 
 	if (flag_decompress) {
-		return decompress_file(infile, outfile, flag_checksum);
+		return decompress_file(infile, outfile, flag_checksum,
+					blocksize);
 	}
 	else {
-		return compress_file(infile, outfile, flag_checksum);
+		return compress_file(infile, outfile, flag_checksum,
+					blocksize);
 	}
 
 	return EXIT_SUCCESS;
