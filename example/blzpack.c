@@ -270,7 +270,7 @@ out:
 
 static int
 decompress_file(const char *packedname, const char *newname, int use_checksum,
-		unsigned long blocksize)
+		int use_safe, unsigned long blocksize)
 {
 	byte header[HEADER_SIZE];
 	FILE *newfile = NULL;
@@ -358,7 +358,14 @@ decompress_file(const char *packedname, const char *newname, int use_checksum,
 		}
 
 		/* Decompress data */
-		depackedsize = blz_depack(packed, data, (unsigned long) hdr_depackedsize);
+		if (use_safe) {
+			depackedsize = blz_depack_safe(
+					packed, (unsigned long) hdr_packedsize,
+					data, (unsigned long) hdr_depackedsize);
+		} else {
+			depackedsize = blz_depack(packed, data,
+					(unsigned long) hdr_depackedsize);
+		}
 
 		/* Check for decompression error */
 		if (depackedsize != hdr_depackedsize) {
@@ -421,6 +428,7 @@ print_syntax(void)
 	       "  -d, --decompress  Decompress\n"
 	       "  -c, --checksum    Use checksums if present\n"
 	       "  -b, --blocksize=N Set block size\n"
+	       "  -s, --safe        Use safe depacker\n"
 	       "  -h, --help        Print this help and exit\n"
 	       "  -V, --version     Print version and exit\n"
 	       "\n");
@@ -444,6 +452,7 @@ main(int argc, char *argv[])
 	struct parg_state ps;
 	int flag_decompress = 0;
 	int flag_checksum = 0;
+	int flag_safe = 0;
 	unsigned long blocksize = DEFAULT_BLOCK_SIZE;
 	const char *infile = NULL;
 	const char *outfile = NULL;
@@ -456,12 +465,13 @@ main(int argc, char *argv[])
 		{ "help", PARG_NOARG, NULL, 'h' },
 		{ "version", PARG_NOARG, NULL, 'V' },
 		{ "blocksize", PARG_REQARG, NULL, 'b' },
+		{ "safe", PARG_NOARG, NULL, 's' },
 		{ 0, 0, 0, 0 }
 	};
 
 	parg_init(&ps);
 
-	while ((c = parg_getopt_long(&ps, argc, argv, "cdhVb:", long_options, NULL)) != -1) {
+	while ((c = parg_getopt_long(&ps, argc, argv, "cdhVb:s", long_options, NULL)) != -1) {
 		switch (c) {
 		case 1:
 			if (infile == NULL) {
@@ -499,6 +509,9 @@ main(int argc, char *argv[])
 				return EXIT_FAILURE;
 			}
 			break;
+		case 's':
+			flag_safe = 1;
+			break;
 		default:
 			printf("Option error at '%s'\n\n", argv[ps.optind - 1]);
 			print_syntax();
@@ -524,7 +537,7 @@ main(int argc, char *argv[])
 
 	if (flag_decompress) {
 		return decompress_file(infile, outfile, flag_checksum,
-					blocksize);
+					flag_safe, blocksize);
 	}
 	else {
 		return compress_file(infile, outfile, flag_checksum,
