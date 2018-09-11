@@ -8,6 +8,8 @@ matrix:
       env: BUILD_TYPE=asan
     - compiler: clang
       env: BUILD_TYPE=ubsan
+    - compiler: clang
+      env: BUILD_TYPE=shared
     - compiler: gcc-6
       addons:
         apt:
@@ -34,6 +36,9 @@ before_script:
         ;;
       "ubsan")
         cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS_DEBUG='-O1 -fno-omit-frame-pointer -fsanitize=undefined' ..
+        ;;
+      "shared")
+        cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=ON ..
         ;;
       *)
         cmake ..
