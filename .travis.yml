@@ -27,13 +27,13 @@ before_script:
   - |-
     case "${BUILD_TYPE}" in
       "coverage")
-        cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_COVERAGE=ON ..
+        cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS_DEBUG='-g -O0 --coverage' ..
         ;;
       "asan")
-        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=address ..
+        cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS_DEBUG='-O1 -fno-omit-frame-pointer -fsanitize=address' ..
         ;;
       "ubsan")
-        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=undefined ..
+        cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS_DEBUG='-O1 -fno-omit-frame-pointer -fsanitize=undefined' ..
         ;;
       *)
         cmake ..
