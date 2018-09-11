@@ -40,7 +40,9 @@ before_script:
         ;;
     esac
 
-script: make VERBOSE=1 && make test
+script:
+  - make VERBOSE=1
+  - ctest -V --output-on-failure
 
 after_success:
   - |-
