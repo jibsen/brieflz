@@ -1,7 +1,7 @@
 /*
  * blzpack - BriefLZ example
  *
- * Copyright (c) 2002-2016 Joergen Ibsen
+ * Copyright (c) 2002-2018 Joergen Ibsen
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -264,14 +264,14 @@ printf_usage(const char *fmt, ...)
 	va_end(arg);
 
 	fputs("\n"
-	      "usage: blzpack [-cds] [-b SIZE] INFILE OUTFILE\n"
+	      "usage: blzpack [-cdsv] [-b SIZE] INFILE OUTFILE\n"
 	      "       blzpack -V | --version\n"
 	      "       blzpack -h | --help\n", stderr);
 }
 
 static int
-compress_file(const char *oldname, const char *packedname, int use_checksum,
-		unsigned long blocksize)
+compress_file(const char *oldname, const char *packedname, int be_verbose,
+              int use_checksum, unsigned long blocksize)
 {
 	byte header[HEADER_SIZE] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
 	FILE *oldfile = NULL;
@@ -316,8 +316,10 @@ compress_file(const char *oldname, const char *packedname, int use_checksum,
 		size_t packedsize;
 
 		/* Show a little progress indicator */
-		fprintf(stderr, "%c\r", rotator[counter]);
-		counter = (counter + 1) & 0x03;
+		if (be_verbose) {
+			fprintf(stderr, "%c\r", rotator[counter]);
+			counter = (counter + 1) & 0x03;
+		}
 
 		/* Compress data block */
 		packedsize = blz_pack(data, packed, (unsigned long) n_read, workmem);
@@ -354,9 +356,11 @@ compress_file(const char *oldname, const char *packedname, int use_checksum,
 	clocks = clock() - clocks;
 
 	/* Show result */
-	fprintf(stderr, "compressed %lu -> %lu bytes (%u%%) in %.2f seconds\n",
-	        insize, outsize, ratio(outsize, insize),
-	        (double) clocks / (double) CLOCKS_PER_SEC);
+	if (be_verbose) {
+		fprintf(stderr, "in %lu out %lu ratio %u%% time %.2f\n",
+		        insize, outsize, ratio(outsize, insize),
+		        (double) clocks / (double) CLOCKS_PER_SEC);
+	}
 
 out:
 	/* Close files */
@@ -382,8 +386,8 @@ out:
 }
 
 static int
-decompress_file(const char *packedname, const char *newname, int use_checksum,
-		int use_safe, unsigned long blocksize)
+decompress_file(const char *packedname, const char *newname, int be_verbose,
+                int use_checksum, int use_safe, unsigned long blocksize)
 {
 	byte header[HEADER_SIZE];
 	FILE *newfile = NULL;
@@ -429,8 +433,10 @@ decompress_file(const char *packedname, const char *newname, int use_checksum,
 		unsigned long crc;
 
 		/* Show a little progress indicator */
-		fprintf(stderr, "%c\r", rotator[counter]);
-		counter = (counter + 1) & 0x03;
+		if (be_verbose) {
+			fprintf(stderr, "%c\r", rotator[counter]);
+			counter = (counter + 1) & 0x03;
+		}
 
 		/* Get compressed and original size from header */
 		hdr_packedsize = (size_t) read_be32(header + 2 * 4);
@@ -508,9 +514,11 @@ decompress_file(const char *packedname, const char *newname, int use_checksum,
 	clocks = clock() - clocks;
 
 	/* Show result */
-	fprintf(stderr, "decompressed %lu -> %lu bytes in %.2f seconds\n",
-	        insize, outsize,
-	        (double) clocks / (double) CLOCKS_PER_SEC);
+	if (be_verbose) {
+		fprintf(stderr, "in %lu out %lu ratio %u%% time %.2f\n",
+		        insize, outsize, ratio(insize, outsize),
+		        (double) clocks / (double) CLOCKS_PER_SEC);
+	}
 
 out:
 	/* Close files */
@@ -543,6 +551,7 @@ print_syntax(void)
 	      "  -d, --decompress       decompress\n"
 	      "  -h, --help             print this help and exit\n"
 	      "  -s, --safe             use safe depacker\n"
+	      "  -v, --verbose          verbose mode\n"
 	      "  -V, --version          print version and exit\n"
 	      "\n", stdout);
 }
@@ -552,7 +561,7 @@ print_version(void)
 {
 	fputs("blzpack " BLZ_VER_STRING "\n"
 	      "\n"
-	      "Copyright (c) 2002-2016 Joergen Ibsen\n"
+	      "Copyright (c) 2002-2018 Joergen Ibsen\n"
 	      "\n"
 	      "Licensed under the zlib license (Zlib).\n"
 	      "There is NO WARRANTY, to the extent permitted by law.\n", stdout);
@@ -569,6 +578,7 @@ main(int argc, char *argv[])
 	int flag_checksum = 0;
 	int flag_decompress = 0;
 	int flag_safe = 0;
+	int flag_verbose = 0;
 	int c;
 
 	const struct parg_option long_options[] = {
@@ -577,13 +587,14 @@ main(int argc, char *argv[])
 		{ "decompress", PARG_NOARG, NULL, 'd' },
 		{ "help", PARG_NOARG, NULL, 'h' },
 		{ "safe", PARG_NOARG, NULL, 's' },
+		{ "verbose", PARG_NOARG, NULL, 'v' },
 		{ "version", PARG_NOARG, NULL, 'V' },
 		{ 0, 0, 0, 0 }
 	};
 
 	parg_init(&ps);
 
-	while ((c = parg_getopt_long(&ps, argc, argv, "b:cdhsV", long_options, NULL)) != -1) {
+	while ((c = parg_getopt_long(&ps, argc, argv, "b:cdhsvV", long_options, NULL)) != -1) {
 		switch (c) {
 		case 1:
 			if (infile == NULL) {
@@ -619,6 +630,9 @@ main(int argc, char *argv[])
 		case 's':
 			flag_safe = 1;
 			break;
+		case 'v':
+			flag_verbose = 1;
+			break;
 		case 'V':
 			print_version();
 			return EXIT_SUCCESS;
@@ -636,12 +650,12 @@ main(int argc, char *argv[])
 	}
 
 	if (flag_decompress) {
-		return decompress_file(infile, outfile, flag_checksum,
-					flag_safe, blocksize);
+		return decompress_file(infile, outfile, flag_verbose,
+		                       flag_checksum, flag_safe, blocksize);
 	}
 	else {
-		return compress_file(infile, outfile, flag_checksum,
-					blocksize);
+		return compress_file(infile, outfile, flag_verbose,
+		                     flag_checksum, blocksize);
 	}
 
 	return EXIT_SUCCESS;
