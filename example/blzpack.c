@@ -29,7 +29,7 @@
  *
  * It processes the data in blocks of 1024k. Adjust DEFAULT_BLOCK_SIZE to
  * 56k or less to compile for 16-bit. The user can supply a block size with
- * the -b option. If decompressing and a larger block occurs in the file,
+ * the -b option. When decompressing, if a larger block occurs in the file,
  * the decompression fails with an error indicating that block's size.
  *
  * Each compressed block starts with a 24 byte header with the following
@@ -47,6 +47,7 @@
  * and write_be32() functions.
  */
 
+#include <errno.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -57,11 +58,16 @@
 #include "parg.h"
 
 /*
- * The block-size used to process data.
+ * The default block size used to process data.
  */
 #ifndef DEFAULT_BLOCK_SIZE
 #  define DEFAULT_BLOCK_SIZE (1024 * 1024UL)
 #endif
+
+/*
+ * Maximum 32-bit block size that will not overflow blz_max_packed_size().
+ */
+#define MAX_BLOCK_SIZE (0xFFFFFFFFUL - 0xFFFFFFFFUL / 9UL - 64UL)
 
 /*
  * The size of the block header.
@@ -154,6 +160,81 @@ ratio(unsigned long x, unsigned long y)
 	}
 
 	return (unsigned int) (x / y);
+}
+
+/*
+ * Convert string with optional size suffix to unsigned long.
+ */
+static int
+strtosize(const char *s, char **endp, unsigned long *val)
+{
+	char *ep = (char *) s;
+	unsigned long v;
+	int power = 0;
+	int orig_errno = errno;
+
+	errno = 0;
+
+	v = strtoul(s, &ep, 10);
+
+	if (endp) {
+		*endp = ep;
+	}
+
+	if (val) {
+		*val = v;
+	}
+
+	if (ep == s) {
+		return -2;
+	}
+
+	switch (*ep) {
+	case 'k':
+	case 'K':
+		power = 1;
+		++ep;
+		break;
+	case 'm':
+	case 'M':
+		power = 2;
+		++ep;
+		break;
+	case 'g':
+	case 'G':
+		power = 3;
+		++ep;
+		break;
+	default:
+		break;
+	}
+
+	if (endp) {
+		*endp = ep;
+	}
+
+	if (v == ULONG_MAX && errno == ERANGE) {
+		return -1;
+	}
+
+	while (power-- > 0) {
+		if (v > ULONG_MAX / 1024UL) {
+			if (val) {
+				*val = ULONG_MAX;
+			}
+			errno = ERANGE;
+			return -1;
+		}
+		v *= 1024UL;
+	}
+
+	if (val) {
+		*val = v;
+	}
+
+	errno = orig_errno;
+
+	return 0;
 }
 
 static int
@@ -425,12 +506,12 @@ print_syntax(void)
 	printf("Usage: blzpack [options] <infile> <outfile>\n"
 	       "\n"
 	       "Options:\n"
-	       "  -d, --decompress  Decompress\n"
-	       "  -c, --checksum    Use checksums if present\n"
-	       "  -b, --blocksize=N Set block size\n"
-	       "  -s, --safe        Use safe depacker\n"
-	       "  -h, --help        Print this help and exit\n"
-	       "  -V, --version     Print version and exit\n"
+	       "  -b, --block-size=SIZE  Set block size\n"
+	       "  -c, --checksum         Use checksums if present\n"
+	       "  -d, --decompress       Decompress\n"
+	       "  -h, --help             Print this help and exit\n"
+	       "  -s, --safe             Use safe depacker\n"
+	       "  -V, --version          Print version and exit\n"
 	       "\n");
 }
 
@@ -450,28 +531,28 @@ int
 main(int argc, char *argv[])
 {
 	struct parg_state ps;
-	int flag_decompress = 0;
-	int flag_checksum = 0;
-	int flag_safe = 0;
-	unsigned long blocksize = DEFAULT_BLOCK_SIZE;
 	const char *infile = NULL;
 	const char *outfile = NULL;
 	char *endptr = NULL;
+	unsigned long blocksize = DEFAULT_BLOCK_SIZE;
+	int flag_checksum = 0;
+	int flag_decompress = 0;
+	int flag_safe = 0;
 	int c;
 
 	const struct parg_option long_options[] = {
+		{ "block-size", PARG_REQARG, NULL, 'b' },
 		{ "checksum", PARG_NOARG, NULL, 'c' },
 		{ "decompress", PARG_NOARG, NULL, 'd' },
 		{ "help", PARG_NOARG, NULL, 'h' },
-		{ "version", PARG_NOARG, NULL, 'V' },
-		{ "blocksize", PARG_REQARG, NULL, 'b' },
 		{ "safe", PARG_NOARG, NULL, 's' },
+		{ "version", PARG_NOARG, NULL, 'V' },
 		{ 0, 0, 0, 0 }
 	};
 
 	parg_init(&ps);
 
-	while ((c = parg_getopt_long(&ps, argc, argv, "cdhVb:s", long_options, NULL)) != -1) {
+	while ((c = parg_getopt_long(&ps, argc, argv, "b:cdhsV", long_options, NULL)) != -1) {
 		switch (c) {
 		case 1:
 			if (infile == NULL) {
@@ -486,6 +567,17 @@ main(int argc, char *argv[])
 				return EXIT_FAILURE;
 			}
 			break;
+		case 'b':
+			if (strtosize(ps.optarg, &endptr, &blocksize)
+			 || *endptr != '\0'
+			 || blocksize == 0
+			 || blocksize > MAX_BLOCK_SIZE) {
+				printf("Invalid argument to --blocksize: "
+					"'%s'\n\n", ps.optarg);
+				print_syntax();
+				return EXIT_FAILURE;
+			}
+			break;
 		case 'c':
 			flag_checksum = 1;
 			break;
@@ -496,21 +588,12 @@ main(int argc, char *argv[])
 			print_syntax();
 			return EXIT_SUCCESS;
 			break;
+		case 's':
+			flag_safe = 1;
+			break;
 		case 'V':
 			print_version();
 			return EXIT_SUCCESS;
-			break;
-		case 'b':
-			blocksize = strtol(ps.optarg, &endptr, 10);
-			if (blocksize == 0 || *endptr != 0) {
-				printf("Invalid argument to --blocksize: "
-					"'%s'\n\n", ps.optarg);
-				print_syntax();
-				return EXIT_FAILURE;
-			}
-			break;
-		case 's':
-			flag_safe = 1;
 			break;
 		default:
 			printf("Option error at '%s'\n\n", argv[ps.optind - 1]);
