@@ -284,28 +284,25 @@ compress_file(const char *oldname, const char *packedname, int be_verbose,
 	unsigned int counter = 0;
 	size_t n_read;
 	clock_t clocks;
-	int res = 0;
+	int res = 1;
 
 	/* Allocate memory */
 	if ((data = (byte *) malloc(blocksize)) == NULL
 	 || (packed = (byte *) malloc(blz_max_packed_size(blocksize))) == NULL
 	 || (workmem = (byte *) malloc(blz_workmem_size(blocksize))) == NULL) {
 		printf_error("not enough memory");
-		res = 1;
 		goto out;
 	}
 
 	/* Open input file */
 	if ((oldfile = fopen(oldname, "rb")) == NULL) {
 		printf_usage("unable to open input file '%s'", oldname);
-		res = 1;
 		goto out;
 	}
 
 	/* Create output file */
 	if ((packedfile = fopen(packedname, "wb")) == NULL) {
 		printf_usage("unable to open output file '%s'", packedname);
-		res = 1;
 		goto out;
 	}
 
@@ -327,7 +324,6 @@ compress_file(const char *oldname, const char *packedname, int be_verbose,
 		/* Check for compression error */
 		if (packedsize == 0) {
 			printf_error("an error occured while compressing");
-			res = 1;
 			goto out;
 		}
 
@@ -361,6 +357,8 @@ compress_file(const char *oldname, const char *packedname, int be_verbose,
 		        insize, outsize, ratio(outsize, insize),
 		        (double) clocks / (double) CLOCKS_PER_SEC);
 	}
+
+	res = 0;
 
 out:
 	/* Close files */
@@ -399,7 +397,7 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 	unsigned int counter = 0;
 	clock_t clocks;
 	size_t max_packed_size;
-	int res = 0;
+	int res = 1;
 
 	max_packed_size = blz_max_packed_size(blocksize);
 
@@ -407,21 +405,18 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 	if ((data = (byte *) malloc(blocksize)) == NULL
 	 || (packed = (byte *) malloc(max_packed_size)) == NULL) {
 		printf_error("not enough memory");
-		res = 1;
 		goto out;
 	}
 
 	/* Open input file */
 	if ((packedfile = fopen(packedname, "rb")) == NULL) {
 		printf_usage("unable to open input file '%s'", packedname);
-		res = 1;
 		goto out;
 	}
 
 	/* Create output file */
 	if ((newfile = fopen(newname, "wb")) == NULL) {
 		printf_usage("unable to open output file '%s'", newname);
-		res = 1;
 		goto out;
 	}
 
@@ -446,7 +441,6 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 		if (read_be32(header + 0 * 4) != 0x626C7A1AUL /* "blz\x1A" */
 		 || read_be32(header + 1 * 4) != 1) {
 			printf_error("invalid header in compressed file");
-			res = 1;
 			goto out;
 		}
 
@@ -455,14 +449,12 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 		 || hdr_depackedsize > blocksize) {
 			printf_usage("compressed file requires block size"
 				     " >= %lu bytes", hdr_depackedsize);
-			res = 1;
 			goto out;
 		}
 
 		/* Read compressed data */
 		if (fread(packed, 1, hdr_packedsize, packedfile) != hdr_packedsize) {
 			printf_error("error reading block from compressed file");
-			res = 1;
 			goto out;
 		}
 
@@ -472,7 +464,6 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 		 && crc != 0
 		 && crc != blz_crc32(packed, hdr_packedsize, 0)) {
 			printf_error("compressed data crc error");
-			res = 1;
 			goto out;
 		}
 
@@ -489,7 +480,6 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 		/* Check for decompression error */
 		if (depackedsize != hdr_depackedsize) {
 			printf_error("an error occured while decompressing");
-			res = 1;
 			goto out;
 		}
 
@@ -499,7 +489,6 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 		 && crc != 0
 		 && crc != blz_crc32(data, depackedsize, 0)) {
 			printf_error("decompressed data crc error");
-			res = 1;
 			goto out;
 		}
 
@@ -519,6 +508,8 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 		        insize, outsize, ratio(insize, outsize),
 		        (double) clocks / (double) CLOCKS_PER_SEC);
 	}
+
+	res = 0;
 
 out:
 	/* Close files */
