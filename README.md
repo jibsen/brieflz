@@ -27,7 +27,7 @@ comments. A configuration file is included, so you can simply run `doxygen`
 to generate documentation in HTML format.
 
 If you wish to compile BriefLZ on 16-bit systems, make sure to adjust the
-constants `BLZ_HASH_BITS` and `BLOCK_SIZE`.
+constants `BLZ_HASH_BITS` and `DEFAULT_BLOCK_SIZE`.
 
 When using BriefLZ as a shared library (dll on Windows), define `BLZ_DLL`.
 When building BriefLZ as a shared library, define both `BLZ_DLL`and
