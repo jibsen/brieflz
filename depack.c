@@ -3,7 +3,7 @@
  *
  * C depacker
  *
- * Copyright (c) 2002-2016 Joergen Ibsen
+ * Copyright (c) 2002-2018 Joergen Ibsen
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -77,7 +77,8 @@ blz_depack(const void *src, void *dst, unsigned long depacked_size)
 
 	bs.src = (const unsigned char *) src;
 	bs.dst = (unsigned char *) dst;
-	/* Initialise to one bit left in tag; that bit is zero (a literal). */
+
+	/* Initialise to one bit left in tag; that bit is zero (a literal) */
 	bs.bits_left = 1;
 	bs.tag = 0;
 

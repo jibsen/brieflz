@@ -3,7 +3,7 @@
  *
  * C safe depacker
  *
- * Copyright (c) 2002-2016 Joergen Ibsen
+ * Copyright (c) 2002-2018 Joergen Ibsen
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -105,7 +105,8 @@ blz_depack_safe(const void *src, unsigned long src_size,
 	bs.src_avail = src_size;
 	bs.dst = (unsigned char *) dst;
 	bs.dst_avail = depacked_size;
-	/* Initialise to one bit left in tag; that bit is zero (a literal). */
+
+	/* Initialise to one bit left in tag; that bit is zero (a literal) */
 	bs.bits_left = 1;
 	bs.tag = 0;
 
