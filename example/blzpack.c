@@ -264,14 +264,15 @@ printf_usage(const char *fmt, ...)
 	va_end(arg);
 
 	fputs("\n"
-	      "usage: blzpack [-cdsv] [-b SIZE] INFILE OUTFILE\n"
+	      "usage: blzpack [-123456789 | --optimal] [-b SIZE] [-cv] INFILE OUTFILE\n"
+	      "       blzpack -d [-b SIZE] [-csv] INFILE OUTFILE\n"
 	      "       blzpack -V | --version\n"
 	      "       blzpack -h | --help\n", stderr);
 }
 
 static int
 compress_file(const char *oldname, const char *packedname, int be_verbose,
-              int use_checksum, unsigned long blocksize)
+              int use_checksum, int level, unsigned long blocksize)
 {
 	byte header[HEADER_SIZE] = { 0x62, 0x6C, 0x7A, 0x1A, 0, 0, 0, 1 };
 	FILE *oldfile = NULL;
@@ -289,7 +290,7 @@ compress_file(const char *oldname, const char *packedname, int be_verbose,
 	/* Allocate memory */
 	if ((data = (byte *) malloc(blocksize)) == NULL
 	 || (packed = (byte *) malloc(blz_max_packed_size(blocksize))) == NULL
-	 || (workmem = (byte *) malloc(blz_workmem_size(blocksize))) == NULL) {
+	 || (workmem = (byte *) malloc(blz_workmem_size_level(blocksize, level))) == NULL) {
 		printf_error("not enough memory");
 		goto out;
 	}
@@ -319,7 +320,7 @@ compress_file(const char *oldname, const char *packedname, int be_verbose,
 		}
 
 		/* Compress data block */
-		packedsize = blz_pack(data, packed, (unsigned long) n_read, workmem);
+		packedsize = blz_pack_level(data, packed, (unsigned long) n_read, workmem, level);
 
 		/* Check for compression error */
 		if (packedsize == 0) {
@@ -537,11 +538,14 @@ print_syntax(void)
 	fputs("usage: blzpack [options] INFILE OUTFILE\n"
 	      "\n"
 	      "options:\n"
+	      "  -1                     compress faster (default)\n"
+	      "  -9                     compress better\n"
+	      "      --optimal          optimal but very slow compression\n"
 	      "  -b, --block-size=SIZE  block size with opt. k/m/g suffix\n"
 	      "  -c, --checksum         use checksums if present\n"
 	      "  -d, --decompress       decompress\n"
-	      "  -h, --help             print this help and exit\n"
 	      "  -s, --safe             use safe depacker\n"
+	      "  -h, --help             print this help and exit\n"
 	      "  -v, --verbose          verbose mode\n"
 	      "  -V, --version          print version and exit\n"
 	      "\n", stdout);
@@ -570,6 +574,7 @@ main(int argc, char *argv[])
 	int flag_decompress = 0;
 	int flag_safe = 0;
 	int flag_verbose = 0;
+	int level = 1;
 	int c;
 
 	const struct parg_option long_options[] = {
@@ -577,6 +582,7 @@ main(int argc, char *argv[])
 		{ "checksum", PARG_NOARG, NULL, 'c' },
 		{ "decompress", PARG_NOARG, NULL, 'd' },
 		{ "help", PARG_NOARG, NULL, 'h' },
+		{ "optimal", PARG_NOARG, NULL, 'x' },
 		{ "safe", PARG_NOARG, NULL, 's' },
 		{ "verbose", PARG_NOARG, NULL, 'v' },
 		{ "version", PARG_NOARG, NULL, 'V' },
@@ -585,7 +591,7 @@ main(int argc, char *argv[])
 
 	parg_init(&ps);
 
-	while ((c = parg_getopt_long(&ps, argc, argv, "b:cdhsvV", long_options, NULL)) != -1) {
+	while ((c = parg_getopt_long(&ps, argc, argv, "123456789b:cdhsvVx", long_options, NULL)) != -1) {
 		switch (c) {
 		case 1:
 			if (infile == NULL) {
@@ -598,6 +604,20 @@ main(int argc, char *argv[])
 				printf_usage("too many arguments");
 				return EXIT_FAILURE;
 			}
+			break;
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			level = c - '0';
+			break;
+		case 'x':
+			level = 10;
 			break;
 		case 'b':
 			if (strtosize(ps.optarg, &endptr, &blocksize)
@@ -646,7 +666,7 @@ main(int argc, char *argv[])
 	}
 	else {
 		return compress_file(infile, outfile, flag_verbose,
-		                     flag_checksum, blocksize);
+		                     flag_checksum, level, blocksize);
 	}
 
 	return EXIT_SUCCESS;

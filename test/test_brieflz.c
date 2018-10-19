@@ -119,43 +119,29 @@ static void generate_random(unsigned char *p, size_t n)
 }
 
 /* Test compressing a zero length buffer */
-TEST pack_nothing(void)
+TEST pack_nothing(void *arg)
 {
 	unsigned long res;
+	const int level = *(int *) arg;
 
 	/* try to compress 0 bytes, passing read only memory */
-	res = blz_pack(data_numbers, (char *) data_numbers, 0,
-	               (char *) data_numbers);
+	res = blz_pack_level(data_numbers, (char *) data_numbers, 0,
+	               (char *) data_numbers, level);
 
 	ASSERT_EQ(0, res);
-	PASS();
-}
-
-/* Test decompressing a zero length buffer */
-TEST depack_nothing(void)
-{
-	unsigned long res;
-
-	res = blz_depack_safe(data_numbers, 0, (char *) data_numbers, 0);
-
-	ASSERT_EQ(0, res);
-
-	res = blz_depack(data_numbers, (char *) data_numbers, 0);
-
-	ASSERT_EQ(0, res);
-
 	PASS();
 }
 
 /* Test compression and decompression of a buffer of zero bytes */
-TEST pack_zeroes(void)
+TEST pack_zeroes(void *arg)
 {
 	unsigned long res;
 	size_t i;
+	const int level = *(int *) arg;
 
 	for (i = 1; i < ARRAY_SIZE(data_zeroes); ++i) {
 		/* compress first i bytes of data_zeroes[] */
-		res = blz_pack(data_zeroes, buffer1, (unsigned long) i, workmem);
+		res = blz_pack_level(data_zeroes, buffer1, (unsigned long) i, workmem, level);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) i));
@@ -178,15 +164,16 @@ TEST pack_zeroes(void)
 
 /* Test compression and all decompressors on a buffer of increasing byte
    values (incompressible) */
-TEST pack_numbers(void)
+TEST pack_numbers(void *arg)
 {
 	unsigned long res;
 	unsigned long size;
 	size_t i;
+	const int level = *(int *) arg;
 
 	for (i = 1; i < ARRAY_SIZE(data_numbers); ++i) {
 		/* compress first i bytes of data_numbers[] */
-		size = blz_pack(data_numbers, buffer1, (unsigned long) i, workmem);
+		size = blz_pack_level(data_numbers, buffer1, (unsigned long) i, workmem, level);
 
 		ASSERT(size != BLZ_ERROR);
 		ASSERT(size <= blz_max_packed_size((unsigned long) i));
@@ -209,15 +196,16 @@ TEST pack_numbers(void)
 
 /* Test compression and decompression of a buffer of compressible data
    consisting of zero and non-zero bytes */
-TEST pack_alternate(void)
+TEST pack_alternate(void *arg)
 {
 	unsigned long res;
 	unsigned long size;
 	size_t i;
+	const int level = *(int *) arg;
 
 	for (i = 1; i < ARRAY_SIZE(data_alternate); ++i) {
 		/* compress first i bytes of data_alternate[] */
-		size = blz_pack(data_alternate, buffer1, (unsigned long) i, workmem);
+		size = blz_pack_level(data_alternate, buffer1, (unsigned long) i, workmem, level);
 
 		ASSERT(size != BLZ_ERROR);
 		ASSERT(size <= blz_max_packed_size((unsigned long) i));
@@ -240,12 +228,13 @@ TEST pack_alternate(void)
 
 /* Test compression and decompression of a buffer of random data with an
    expanding area of matching bytes between the front and back */
-TEST pack_random(void)
+TEST pack_random(void *arg)
 {
 	unsigned char *p = NULL;
-	size_t size = ARRAY_SIZE(buffer1);
+	const size_t size = ARRAY_SIZE(buffer1);
 	size_t i, j;
 	unsigned long res;
+	const int level = *(int *) arg;
 
 	srand(42);
 	generate_random(buffer1, size);
@@ -258,7 +247,7 @@ TEST pack_random(void)
 		}
 
 		/* compress */
-		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
+		res = blz_pack_level(buffer1, buffer2, (unsigned long) size, workmem, level);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
@@ -268,7 +257,7 @@ TEST pack_random(void)
 		assert(p != NULL);
 
 		/* compress again, to buffer of exact size */
-		res = blz_pack(buffer1, p, (unsigned long) size, workmem);
+		res = blz_pack_level(buffer1, p, (unsigned long) size, workmem, level);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
@@ -294,12 +283,13 @@ TEST pack_random(void)
 
 /* Test compression and decompression of a buffer of random data with an
    expanding area of identical bytes at the back */
-TEST pack_random_start(void)
+TEST pack_random_start(void *arg)
 {
 	unsigned char *p = NULL;
-	size_t size = ARRAY_SIZE(buffer1);
+	const size_t size = ARRAY_SIZE(buffer1);
 	size_t i, j;
 	unsigned long res;
+	const int level = *(int *) arg;
 
 	srand(42);
 	generate_random(buffer1, size);
@@ -311,7 +301,7 @@ TEST pack_random_start(void)
 		}
 
 		/* compress */
-		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
+		res = blz_pack_level(buffer1, buffer2, (unsigned long) size, workmem, level);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
@@ -321,7 +311,7 @@ TEST pack_random_start(void)
 		assert(p != NULL);
 
 		/* compress again, to buffer of exact size */
-		res = blz_pack(buffer1, p, (unsigned long) size, workmem);
+		res = blz_pack_level(buffer1, p, (unsigned long) size, workmem, level);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
@@ -347,12 +337,13 @@ TEST pack_random_start(void)
 
 /* Test compression and decompression of a buffer of random data with an
    expanding area of identical bytes at the front */
-TEST pack_random_end(void)
+TEST pack_random_end(void *arg)
 {
 	unsigned char *p = NULL;
-	size_t size = ARRAY_SIZE(buffer1);
+	const size_t size = ARRAY_SIZE(buffer1);
 	size_t i, j;
 	unsigned long res;
+	const int level = *(int *) arg;
 
 	srand(42);
 	generate_random(buffer1, size);
@@ -364,7 +355,7 @@ TEST pack_random_end(void)
 		}
 
 		/* compress */
-		res = blz_pack(buffer1, buffer2, (unsigned long) size, workmem);
+		res = blz_pack_level(buffer1, buffer2, (unsigned long) size, workmem, level);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
@@ -374,7 +365,7 @@ TEST pack_random_end(void)
 		assert(p != NULL);
 
 		/* compress again, to buffer of exact size */
-		res = blz_pack(buffer1, p, (unsigned long) size, workmem);
+		res = blz_pack_level(buffer1, p, (unsigned long) size, workmem, level);
 
 		ASSERT(res != BLZ_ERROR);
 		ASSERT(res <= blz_max_packed_size((unsigned long) size));
@@ -398,6 +389,22 @@ TEST pack_random_end(void)
 	PASS();
 }
 
+/* Test decompressing a zero length buffer */
+TEST depack_nothing(void)
+{
+	unsigned long res;
+
+	res = blz_depack_safe(data_numbers, 0, (char *) data_numbers, 0);
+
+	ASSERT_EQ(0, res);
+
+	res = blz_depack(data_numbers, (char *) data_numbers, 0);
+
+	ASSERT_EQ(0, res);
+
+	PASS();
+}
+
 /* Test blz_depack_safe on compressed data with errors */
 TEST depack_safe_errors(void)
 {
@@ -417,7 +424,7 @@ TEST depack_safe_errors(void)
 /* Test blz_depack_safe on random data */
 TEST depack_safe_random(void)
 {
-	size_t size = ARRAY_SIZE(buffer1) / 2;
+	const size_t size = ARRAY_SIZE(buffer1) / 2;
 	size_t i, j;
 
 	for (i = 0; i < 1024; ++i) {
@@ -434,25 +441,29 @@ TEST depack_safe_random(void)
 
 SUITE(BriefLZ)
 {
-	workmem = malloc(blz_workmem_size((unsigned long) ARRAY_SIZE(buffer1)));
+	int level;
 
-	assert(workmem != NULL);
+	for (level = 1; level <= 9; ++level) {
+		workmem = malloc(blz_workmem_size_level((unsigned long) ARRAY_SIZE(buffer1), level));
 
-	RUN_TEST(pack_nothing);
+		assert(workmem != NULL);
+
+		RUN_TEST1(pack_nothing, &level);
+
+		RUN_TEST1(pack_zeroes, &level);
+		RUN_TEST1(pack_numbers, &level);
+		RUN_TEST1(pack_alternate, &level);
+
+		RUN_TEST1(pack_random, &level);
+		RUN_TEST1(pack_random_start, &level);
+		RUN_TEST1(pack_random_end, &level);
+
+		free(workmem);
+	}
+
 	RUN_TEST(depack_nothing);
-
-	RUN_TEST(pack_zeroes);
-	RUN_TEST(pack_numbers);
-	RUN_TEST(pack_alternate);
-
-	RUN_TEST(pack_random);
-	RUN_TEST(pack_random_start);
-	RUN_TEST(pack_random_end);
-
 	RUN_TEST(depack_safe_errors);
 	RUN_TEST(depack_safe_random);
-
-	free(workmem);
 }
 
 GREATEST_MAIN_DEFS();
