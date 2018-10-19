@@ -91,14 +91,14 @@ endif()
 # brieflz
 #
 add_library(brieflz ${brieflz_library_type}
-  brieflz.c
-  depack.c
-  depacks.c
-  brieflz.h
+  src/brieflz.c
+  src/depack.c
+  src/depacks.c
+  include/brieflz.h
 )
 target_include_directories(brieflz
-  INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 set_target_properties(brieflz PROPERTIES
@@ -157,7 +157,7 @@ if(BRIEFLZ_BUILD_INSTALL)
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
-  install(FILES brieflz.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  install(FILES include/brieflz.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
   # Install config file package
   #
@@ -181,7 +181,7 @@ if(BRIEFLZ_BUILD_INSTALL)
   endif()
 
   # Install pkg-config file
-  configure_file(brieflz.pc.in brieflz.pc @ONLY)
+  configure_file(src/brieflz.pc.in brieflz.pc @ONLY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/brieflz.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
   )

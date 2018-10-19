@@ -52,9 +52,9 @@ script:
 after_success:
   - |-
     if [ "${BUILD_TYPE}" = "coverage" ]; then
-      gcov CMakeFiles/brieflz.dir/brieflz.c.gcno -o CMakeFiles/brieflz.dir
-      gcov CMakeFiles/brieflz.dir/depack.c.gcno -o CMakeFiles/brieflz.dir
-      gcov CMakeFiles/brieflz.dir/depacks.c.gcno -o CMakeFiles/brieflz.dir
+      gcov CMakeFiles/brieflz.dir/src/brieflz.c.gcno -o CMakeFiles/brieflz.dir/src
+      gcov CMakeFiles/brieflz.dir/src/depack.c.gcno -o CMakeFiles/brieflz.dir/src
+      gcov CMakeFiles/brieflz.dir/src/depacks.c.gcno -o CMakeFiles/brieflz.dir/src
       codecov -X gcov
     fi
 

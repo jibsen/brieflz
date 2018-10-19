@@ -8,8 +8,8 @@
 
 .PHONY: clean all
 
-CFLAGS = -Wall -Wextra -pedantic -O2 -flto
-CPPFLAGS = -DNDEBUG -I..
+CFLAGS = -std=c99 -Wall -Wno-unused-function -msse2 -mfpmath=sse -O3 -flto
+CPPFLAGS = -DNDEBUG -I../include
 
 ifeq ($(OS),Windows_NT)
   LDFLAGS += -static
@@ -18,7 +18,7 @@ ifeq ($(OS),Windows_NT)
   endif
 endif
 
-objs = blzpack.o parg.o brieflz.o depack.o
+objs = blzpack.o parg.o brieflz.o depack.o depacks.o
 
 target = blzpack
 
@@ -27,7 +27,7 @@ all: $(target)
 %.o : %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-%.o : ../%.c
+%.o : ../src/%.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 $(target): $(objs)
@@ -36,7 +36,8 @@ $(target): $(objs)
 clean:
 	$(RM) $(objs) $(target)
 
-blzpack.o: ../brieflz.h parg.h
+blzpack.o: ../include/brieflz.h parg.h
 parg.o: parg.h
-brieflz.o: ../brieflz.h
-depack.o: ../brieflz.h
+brieflz.o: ../include/brieflz.h
+depack.o: ../include/brieflz.h
+depacks.o: ../include/brieflz.h
