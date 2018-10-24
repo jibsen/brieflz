@@ -443,20 +443,22 @@ SUITE(BriefLZ)
 {
 	int level;
 
-	for (level = 1; level <= 9; ++level) {
+	for (level = 1; level <= 10; ++level) {
 		workmem = malloc(blz_workmem_size_level((unsigned long) ARRAY_SIZE(buffer1), level));
 
 		assert(workmem != NULL);
 
 		RUN_TEST1(pack_nothing, &level);
 
-		RUN_TEST1(pack_zeroes, &level);
 		RUN_TEST1(pack_numbers, &level);
 		RUN_TEST1(pack_alternate, &level);
-
 		RUN_TEST1(pack_random, &level);
-		RUN_TEST1(pack_random_start, &level);
-		RUN_TEST1(pack_random_end, &level);
+
+		if (level < 10) {
+			RUN_TEST1(pack_random_start, &level);
+			RUN_TEST1(pack_random_end, &level);
+			RUN_TEST1(pack_zeroes, &level);
+		}
 
 		free(workmem);
 	}
