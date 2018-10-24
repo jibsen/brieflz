@@ -118,6 +118,9 @@ if(BRIEFLZ_BUILD_SHARED)
     PUBLIC BLZ_DLL
   )
 endif()
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+  set_target_properties(brieflz PROPERTIES C_STANDARD 99)
+endif()
 
 #
 # blzpack
