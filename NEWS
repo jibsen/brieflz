@@ -1,4 +1,4 @@
-BriefLZ 1.2.0 (2018-10-23)
+BriefLZ 1.2.0 (2018-10-25)
 
   * Add compression function `blz_pack_level` that optionally provides
     better ratios by using more time/space
