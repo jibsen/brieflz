@@ -296,9 +296,11 @@ blz_putbits(struct blz_state *bs, unsigned long bits, int num)
 	assert(num >= 0 && num <= 16);
 	assert((bits & (~0UL << num)) == 0);
 
+	// Shift num bits into tag
 	unsigned long tag = ((unsigned long) bs->tag << num) | bits;
 	bs->tag = (unsigned int) tag;
 
+	// Check if tag is full
 	if (bs->bits_left < num) {
 		const unsigned int top16 = (unsigned int) (tag >> (num - bs->bits_left));
 
@@ -348,6 +350,7 @@ blz_putgamma(struct blz_state *bs, unsigned long val)
 	assert(val >= 2);
 
 #if !defined(BLZ_NO_LUT)
+	// Output small values using lookup
 	if (val < 512) {
 		const unsigned int bits = blz_gamma_lookup[val][0];
 		const unsigned int shift = blz_gamma_lookup[val][1];

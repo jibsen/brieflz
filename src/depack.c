@@ -150,6 +150,7 @@ blz_getgamma(struct blz_state *bs)
 	unsigned long result = 1;
 
 #if !defined(BLZ_NO_LUT)
+	/* Decode up to 8 bits of gamma2 code using lookup if possible */
 	if (bs->bits_left >= 8) {
 		unsigned int top8 = (bs->tag >> 8) & 0x00FF;
 		int shift;
