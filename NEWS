@@ -1,3 +1,7 @@
+BriefLZ 1.3.0 (TBD)
+
+  * Add btparse algorithm, which is used for levels 8, 9, and optimal.
+
 BriefLZ 1.2.0 (2018-10-25)
 
   * Add compression function `blz_pack_level` that optionally provides

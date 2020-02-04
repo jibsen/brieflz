@@ -3,7 +3,7 @@
  *
  * C/C++ header file
  *
- * Copyright (c) 2002-2018 Joergen Ibsen
+ * Copyright (c) 2002-2020 Joergen Ibsen
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -33,9 +33,9 @@ extern "C" {
 #endif
 
 #define BLZ_VER_MAJOR 1        /**< Major version number */
-#define BLZ_VER_MINOR 2        /**< Minor version number */
+#define BLZ_VER_MINOR 3        /**< Minor version number */
 #define BLZ_VER_PATCH 0        /**< Patch version number */
-#define BLZ_VER_STRING "1.2.0" /**< Version number as a string */
+#define BLZ_VER_STRING "1.3.0" /**< Version number as a string */
 
 #ifdef BLZ_DLL
 #  if defined(_WIN32) || defined(__CYGWIN__)
