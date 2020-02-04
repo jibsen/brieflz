@@ -563,9 +563,9 @@ blz_workmem_size_level(unsigned long src_size, int level)
 	case 5:
 	case 6:
 	case 7:
+		return blz_leparse_workmem_size(src_size);
 	case 8:
 	case 9:
-		return blz_leparse_workmem_size(src_size);
 	case 10:
 		return blz_btparse_workmem_size(src_size);
 	default:
@@ -593,9 +593,9 @@ blz_pack_level(const void *src, void *dst, unsigned long src_size,
 	case 7:
 		return blz_pack_leparse(src, dst, src_size, workmem, 64, 64);
 	case 8:
-		return blz_pack_leparse(src, dst, src_size, workmem, 512, 128);
+		return blz_pack_btparse(src, dst, src_size, workmem, 16, 96);
 	case 9:
-		return blz_pack_leparse(src, dst, src_size, workmem, 4096, 256);
+		return blz_pack_btparse(src, dst, src_size, workmem, 32, 224);
 	case 10:
 		return blz_pack_btparse(src, dst, src_size, workmem, ULONG_MAX, ULONG_MAX);
 	default:
