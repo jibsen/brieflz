@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2018 Scott Vokes <vokes.s@gmail.com>
+ * Copyright (c) 2011-2019 Scott Vokes <vokes.s@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,10 +21,10 @@
 extern "C" {
 #endif
 
-/* 1.4.0 */
+/* 1.4.2 */
 #define GREATEST_VERSION_MAJOR 1
 #define GREATEST_VERSION_MINOR 4
-#define GREATEST_VERSION_PATCH 0
+#define GREATEST_VERSION_PATCH 2
 
 /* A unit testing system for C, contained in 1 file.
  * It doesn't use dynamic allocation or depend on anything
@@ -184,7 +184,7 @@ typedef void greatest_teardown_cb(void *udata);
 /* Type for an equality comparison between two pointers of the same type.
  * Should return non-0 if equal, otherwise 0.
  * UDATA is a closure value, passed through from ASSERT_EQUAL_T[m]. */
-typedef int greatest_equal_cb(const void *exp, const void *got, void *udata);
+typedef int greatest_equal_cb(const void *expd, const void *got, void *udata);
 
 /* Type for a callback that prints a value pointed to by T.
  * Return value has the same meaning as printf's.
@@ -223,9 +223,9 @@ struct greatest_prng {
     unsigned long count;        /* how many tests, this pass */
     unsigned long count_ceil;   /* total number of tests */
     unsigned long count_run;    /* total tests run */
-    unsigned long mod;          /* power-of-2 ceiling of count_ceil */
     unsigned long a;            /* LCG multiplier */
     unsigned long c;            /* LCG increment */
+    unsigned long m;            /* LCG modulus, based on count_ceil */
 };
 
 /* Struct containing all test runner state. */
@@ -306,7 +306,7 @@ typedef const char *greatest_enum_str_fun(int value);
 /* These are used internally by greatest macros. */
 int greatest_test_pre(const char *name);
 void greatest_test_post(int res);
-int greatest_do_assert_equal_t(const void *exp, const void *got,
+int greatest_do_assert_equal_t(const void *expd, const void *got,
     greatest_type_info *type_info, void *udata);
 void greatest_prng_init_first_pass(int id);
 int greatest_prng_init_second_pass(int id, unsigned long seed);
@@ -347,7 +347,8 @@ void greatest_set_test_suffix(const char *suffix);
  * Macros *
  **********/
 
-/* Define a suite. */
+/* Define a suite. (The duplication is intentional -- it eliminates
+ * a warning from -Wmissing-declarations.) */
 #define GREATEST_SUITE(NAME) void NAME(void); void NAME(void)
 
 /* Declare a suite, provided by another compilation unit. */
@@ -538,7 +539,7 @@ typedef enum greatest_test_res {
             &greatest_type_info_string, NULL);                          \
     } while (0)                                                         \
 
-/* Fail if EXP is not equal to GOT, according to strcmp. */
+/* Fail if EXP is not equal to GOT, according to strncmp. */
 #define GREATEST_ASSERT_STRN_EQm(MSG, EXP, GOT, SIZE)                   \
     do {                                                                \
         size_t size = SIZE;                                             \
@@ -721,7 +722,7 @@ int greatest_test_pre(const char *name) {                               \
       !greatest_name_match(g->name_buf, g->test_exclude, 0);            \
     if (GREATEST_LIST_ONLY()) {   /* just listing test names */         \
         if (match) {                                                    \
-            fprintf(GREATEST_STDOUT, "  %s\n", g->name_buf);            \
+            GREATEST_FPRINTF(GREATEST_STDOUT, "  %s\n", g->name_buf);   \
         }                                                               \
         goto clear;                                                     \
     }                                                                   \
@@ -846,9 +847,7 @@ static void update_counts_and_reset_suite(void) {                       \
 static int greatest_suite_pre(const char *suite_name) {                 \
     struct greatest_prng *p = &greatest_info.prng[0];                   \
     if (!greatest_name_match(suite_name, greatest_info.suite_filter, 1) \
-        || (GREATEST_FIRST_FAIL() && greatest_info.failed > 0)) {       \
-        return 0;                                                       \
-    }                                                                   \
+        || (GREATEST_FAILURE_ABORT())) { return 0; }                    \
     if (p->random_order) {                                              \
         p->count++;                                                     \
         if (!p->initialized || ((p->count - 1) != p->state)) {          \
@@ -875,17 +874,17 @@ static void greatest_run_suite(greatest_suite_cb *suite_cb,             \
     }                                                                   \
 }                                                                       \
                                                                         \
-int greatest_do_assert_equal_t(const void *exp, const void *got,        \
+int greatest_do_assert_equal_t(const void *expd, const void *got,       \
         greatest_type_info *type_info, void *udata) {                   \
     int eq = 0;                                                         \
     if (type_info == NULL || type_info->equal == NULL) {                \
         return 0;                                                       \
     }                                                                   \
-    eq = type_info->equal(exp, got, udata);                             \
+    eq = type_info->equal(expd, got, udata);                            \
     if (!eq) {                                                          \
         if (type_info->print != NULL) {                                 \
             GREATEST_FPRINTF(GREATEST_STDOUT, "\nExpected: ");          \
-            (void)type_info->print(exp, udata);                         \
+            (void)type_info->print(expd, udata);                        \
             GREATEST_FPRINTF(GREATEST_STDOUT, "\n     Got: ");          \
             (void)type_info->print(got, udata);                         \
             GREATEST_FPRINTF(GREATEST_STDOUT, "\n");                    \
@@ -896,15 +895,15 @@ int greatest_do_assert_equal_t(const void *exp, const void *got,        \
                                                                         \
 static void greatest_usage(const char *name) {                          \
     GREATEST_FPRINTF(GREATEST_STDOUT,                                   \
-        "Usage: %s [--help] [-hlfav] [-s SUITE] [-t TEST]\n"            \
+        "Usage: %s [-hlfav] [-s SUITE] [-t TEST] [-x EXCLUDE]\n"        \
         "  -h, --help  print this Help\n"                               \
         "  -l          List suites and tests, then exit (dry run)\n"    \
         "  -f          Stop runner after first failure\n"               \
         "  -a          Abort on first failure (implies -f)\n"           \
         "  -v          Verbose output\n"                                \
-        "  -s SUITE    only run suites containing string SUITE\n"       \
-        "  -t TEST     only run tests containing string TEST\n"         \
-        "  -x EXCLUDE  exclude tests containing string EXCLUDE\n",      \
+        "  -s SUITE    only run suites containing substring SUITE\n"    \
+        "  -t TEST     only run tests containing substring TEST\n"      \
+        "  -x EXCLUDE  exclude tests containing substring EXCLUDE\n",   \
         name);                                                          \
 }                                                                       \
                                                                         \
@@ -993,7 +992,7 @@ void greatest_set_verbosity(unsigned int verbosity) {                   \
 }                                                                       \
                                                                         \
 void greatest_set_flag(greatest_flag_t flag) {                          \
-    greatest_info.flags |= flag;                                        \
+    greatest_info.flags = (unsigned char)(greatest_info.flags | flag);  \
 }                                                                       \
                                                                         \
 void greatest_set_test_suffix(const char *suffix) {                     \
@@ -1011,12 +1010,12 @@ void GREATEST_SET_TEARDOWN_CB(greatest_teardown_cb *cb,                 \
     greatest_info.teardown_udata = udata;                               \
 }                                                                       \
                                                                         \
-static int greatest_string_equal_cb(const void *exp, const void *got,   \
+static int greatest_string_equal_cb(const void *expd, const void *got,  \
     void *udata) {                                                      \
     size_t *size = (size_t *)udata;                                     \
     return (size != NULL                                                \
-        ? (0 == strncmp((const char *)exp, (const char *)got, *size))   \
-        : (0 == strcmp((const char *)exp, (const char *)got)));         \
+        ? (0 == strncmp((const char *)expd, (const char *)got, *size))  \
+        : (0 == strcmp((const char *)expd, (const char *)got)));        \
 }                                                                       \
                                                                         \
 static int greatest_string_printf_cb(const void *t, void *udata) {      \
@@ -1029,10 +1028,10 @@ greatest_type_info greatest_type_info_string = {                        \
     greatest_string_printf_cb,                                          \
 };                                                                      \
                                                                         \
-static int greatest_memory_equal_cb(const void *exp, const void *got,   \
+static int greatest_memory_equal_cb(const void *expd, const void *got,  \
     void *udata) {                                                      \
     greatest_memory_cmp_env *env = (greatest_memory_cmp_env *)udata;    \
-    return (0 == memcmp(exp, got, env->size));                          \
+    return (0 == memcmp(expd, got, env->size));                         \
 }                                                                       \
                                                                         \
 /* Hexdump raw memory, with differences highlighted */                  \
@@ -1076,18 +1075,17 @@ void greatest_prng_init_first_pass(int id) {                            \
 }                                                                       \
                                                                         \
 int greatest_prng_init_second_pass(int id, unsigned long seed) {        \
-    static unsigned long primes[] = { 11, 101, 1009, 10007,             \
-        100003, 1000003, 10000019, 100000007, 1000000007,               \
-        1538461, 1865471, 17471, 2147483647 /* 2**32 - 1 */, };         \
-    struct greatest_prng *prng = &greatest_info.prng[id];               \
-    if (prng->count == 0) { return 0; }                                 \
-    prng->mod = 1;                                                      \
-    prng->count_ceil = prng->count;                                     \
-    while (prng->mod < prng->count) { prng->mod <<= 1; }                \
-    prng->state = seed & 0x1fffffff;    /* only use lower 29 bits... */ \
-    prng->a = (4LU * prng->state) + 1;  /* to avoid overflow */         \
-    prng->c = primes[(seed * 16451) % sizeof(primes)/sizeof(primes[0])];\
-    prng->initialized = 1;                                              \
+    struct greatest_prng *p = &greatest_info.prng[id];                  \
+    if (p->count == 0) { return 0; }                                    \
+    p->count_ceil = p->count;                                           \
+    for (p->m = 1; p->m < p->count; p->m <<= 1) {}                      \
+    p->state = seed & 0x1fffffff;     /* only use lower 29 bits */      \
+    p->a = 4LU * p->state;            /* to avoid overflow when */      \
+    p->a = (p->a ? p->a : 4) | 1;            /* multiplied by 4 */      \
+    p->c = 2147483647;        /* and so p->c ((2 ** 31) - 1) is */      \
+    p->initialized = 1;     /* always relatively prime to p->a. */      \
+    fprintf(stderr, "init_second_pass: a %lu, c %lu, state %lu\n",      \
+        p->a, p->c, p->state);                                          \
     return 1;                                                           \
 }                                                                       \
                                                                         \
@@ -1104,7 +1102,7 @@ int greatest_prng_init_second_pass(int id, unsigned long seed) {        \
 void greatest_prng_step(int id) {                                       \
     struct greatest_prng *p = &greatest_info.prng[id];                  \
     do {                                                                \
-        p->state = ((p->a * p->state) + p->c) & (p->mod - 1);           \
+        p->state = ((p->a * p->state) + p->c) & (p->m - 1);             \
     } while (p->state >= p->count_ceil);                                \
 }                                                                       \
                                                                         \
