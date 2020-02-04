@@ -3,7 +3,7 @@
 //
 // C packer
 //
-// Copyright (c) 2002-2018 Joergen Ibsen
+// Copyright (c) 2002-2020 Joergen Ibsen
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -543,10 +543,10 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 }
 
 // Include compression algorithms used by blz_pack_level
-#include "brieflz_lazy.h"
+#include "brieflz_btparse.h"
 #include "brieflz_hashbucket.h"
+#include "brieflz_lazy.h"
 #include "brieflz_leparse.h"
-#include "brieflz_ssparse.h"
 
 unsigned long
 blz_workmem_size_level(unsigned long src_size, int level)
@@ -567,7 +567,7 @@ blz_workmem_size_level(unsigned long src_size, int level)
 	case 9:
 		return blz_leparse_workmem_size(src_size);
 	case 10:
-		return blz_ssparse_workmem_size(src_size);
+		return blz_btparse_workmem_size(src_size);
 	default:
 		return BLZ_ERROR;
 	}
@@ -597,7 +597,7 @@ blz_pack_level(const void *src, void *dst, unsigned long src_size,
 	case 9:
 		return blz_pack_leparse(src, dst, src_size, workmem, 4096, 256);
 	case 10:
-		return blz_pack_ssparse(src, dst, src_size, workmem, ULONG_MAX, ULONG_MAX);
+		return blz_pack_btparse(src, dst, src_size, workmem, ULONG_MAX, ULONG_MAX);
 	default:
 		return BLZ_ERROR;
 	}

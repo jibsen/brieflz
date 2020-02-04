@@ -92,12 +92,10 @@ endif()
 #
 add_library(brieflz ${brieflz_library_type}
   src/brieflz.c
+  src/brieflz_btparse.h
   src/brieflz_hashbucket.h
-  src/brieflz_hashchain.h
   src/brieflz_lazy.h
   src/brieflz_leparse.h
-  src/brieflz_sliding.h
-  src/brieflz_ssparse.h
   src/depack.c
   src/depacks.c
   include/brieflz.h
