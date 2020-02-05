@@ -212,7 +212,7 @@ blz_pack_leparse(const void *src, void *dst, unsigned long src_size, void *workm
 				}
 			}
 
-			if (len >= accept_len) {
+			if (len >= accept_len || len == len_limit) {
 				break;
 			}
 		}
