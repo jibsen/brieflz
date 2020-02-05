@@ -418,8 +418,8 @@ blz_max_packed_size(unsigned long src_size)
 	return src_size + src_size / 8 + 64;
 }
 
-unsigned long
-blz_workmem_size(unsigned long src_size)
+size_t
+blz_workmem_size(size_t src_size)
 {
 	(void) src_size;
 
@@ -548,8 +548,8 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 #include "brieflz_lazy.h"
 #include "brieflz_leparse.h"
 
-unsigned long
-blz_workmem_size_level(unsigned long src_size, int level)
+size_t
+blz_workmem_size_level(size_t src_size, int level)
 {
 	switch (level) {
 	case 1:
@@ -569,7 +569,7 @@ blz_workmem_size_level(unsigned long src_size, int level)
 	case 10:
 		return blz_btparse_workmem_size(src_size);
 	default:
-		return BLZ_ERROR;
+		return (size_t) -1;
 	}
 }
 

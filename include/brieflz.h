@@ -28,6 +28,8 @@
 #ifndef BRIEFLZ_H_INCLUDED
 #define BRIEFLZ_H_INCLUDED
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -87,8 +89,8 @@ blz_max_packed_size(unsigned long src_size);
  * @param src_size number of bytes to compress
  * @return required size in bytes of `workmem` buffer
  */
-BLZ_API unsigned long
-blz_workmem_size(unsigned long src_size);
+BLZ_API size_t
+blz_workmem_size(size_t src_size);
 
 /**
  * Compress `src_size` bytes of data from `src` to `dst`.
@@ -111,8 +113,8 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem);
  * @param level compression level
  * @return required size in bytes of `workmem` buffer
  */
-BLZ_API unsigned long
-blz_workmem_size_level(unsigned long src_size, int level);
+BLZ_API size_t
+blz_workmem_size_level(size_t src_size, int level);
 
 /**
  * Compress `src_size` bytes of data from `src` to `dst`.

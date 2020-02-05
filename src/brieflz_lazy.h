@@ -3,7 +3,7 @@
 //
 // Lazy (non-greedy) parsing with one-byte-lookahead
 //
-// Copyright (c) 2016-2018 Joergen Ibsen
+// Copyright (c) 2016-2020 Joergen Ibsen
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -28,8 +28,8 @@
 #ifndef BRIEFLZ_LAZY_H_INCLUDED
 #define BRIEFLZ_LAZY_H_INCLUDED
 
-static unsigned long
-blz_lazy_workmem_size(unsigned long src_size)
+static size_t
+blz_lazy_workmem_size(size_t src_size)
 {
 	(void) src_size;
 

@@ -28,8 +28,8 @@
 #ifndef BRIEFLZ_BTPARSE_H_INCLUDED
 #define BRIEFLZ_BTPARSE_H_INCLUDED
 
-static unsigned long
-blz_btparse_workmem_size(unsigned long src_size)
+static size_t
+blz_btparse_workmem_size(size_t src_size)
 {
 	return (5 * src_size + 3 + LOOKUP_SIZE) * sizeof(unsigned long);
 }

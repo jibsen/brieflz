@@ -3,7 +3,7 @@
 //
 // Lazy parsing with multiple previous positions per hash
 //
-// Copyright (c) 2016-2018 Joergen Ibsen
+// Copyright (c) 2016-2020 Joergen Ibsen
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -28,14 +28,14 @@
 #ifndef BRIEFLZ_HASHBUCKET_H_INCLUDED
 #define BRIEFLZ_HASHBUCKET_H_INCLUDED
 
-static unsigned long
-blz_hashbucket_workmem_size(unsigned long src_size, unsigned int bucket_size)
+static size_t
+blz_hashbucket_workmem_size(size_t src_size, unsigned int bucket_size)
 {
 	(void) src_size;
 
 	assert(bucket_size > 0);
-	assert(sizeof(bucket_size) < sizeof(unsigned long)
-	    || bucket_size < ULONG_MAX / (LOOKUP_SIZE * sizeof(unsigned long)));
+	assert(sizeof(bucket_size) < sizeof(size_t)
+	    || bucket_size < SIZE_MAX / (LOOKUP_SIZE * sizeof(unsigned long)));
 
 	return (LOOKUP_SIZE * bucket_size) * sizeof(unsigned long);
 }

@@ -3,7 +3,7 @@
 //
 // Backwards dynamic programming parse
 //
-// Copyright (c) 2016-2018 Joergen Ibsen
+// Copyright (c) 2016-2020 Joergen Ibsen
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -28,8 +28,8 @@
 #ifndef BRIEFLZ_SSPARSE_H_INCLUDED
 #define BRIEFLZ_SSPARSE_H_INCLUDED
 
-static unsigned long
-blz_ssparse_workmem_size(unsigned long src_size)
+static size_t
+blz_ssparse_workmem_size(size_t src_size)
 {
 	return (LOOKUP_SIZE < 2 * src_size ? 3 * src_size : src_size + LOOKUP_SIZE)
 	     * sizeof(unsigned long);
