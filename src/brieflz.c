@@ -388,6 +388,21 @@ blz_putgamma(struct blz_state *bs, unsigned long val)
 	blz_putbit(bs, 0);
 }
 
+static unsigned char*
+blz_finalize(struct blz_state *bs)
+{
+	// Trailing one bit to delimit any literal tags
+	blz_putbit(bs, 1);
+
+	// Shift last tag into position and store
+	bs->tag <<= bs->bits_left;
+	bs->tag_out[0] = bs->tag & 0x00FF;
+	bs->tag_out[1] = (bs->tag >> 8) & 0x00FF;
+
+	// Return pointer one past end of output
+	return bs->next_out;
+}
+
 // Hash four bytes starting a p.
 //
 // This is Fibonacci hashing, also known as Knuth's multiplicative hash. The

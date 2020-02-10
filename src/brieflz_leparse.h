@@ -87,7 +87,9 @@ blz_pack_leparse(const void *src, void *dst, unsigned long src_size, void *workm
 			// Copy literal
 			*bs.next_out++ = in[i];
 		}
-		goto finalize;
+
+		// Return compressed size
+		return (unsigned long) (blz_finalize(&bs) - (unsigned char *) dst);
 	}
 
 	// With a bit of careful ordering we can fit in 3 * src_size words.
@@ -245,17 +247,8 @@ blz_pack_leparse(const void *src, void *dst, unsigned long src_size, void *workm
 		}
 	}
 
-finalize:
-	// Trailing one bit to delimit any literal tags
-	blz_putbit(&bs, 1);
-
-	// Shift last tag into position and store
-	bs.tag <<= bs.bits_left;
-	bs.tag_out[0] = bs.tag & 0x00FF;
-	bs.tag_out[1] = (bs.tag >> 8) & 0x00FF;
-
 	// Return compressed size
-	return (unsigned long) (bs.next_out - (unsigned char *) dst);
+	return (unsigned long) (blz_finalize(&bs) - (unsigned char *) dst);
 }
 
 #endif /* BRIEFLZ_LEPARSE_H_INCLUDED */
