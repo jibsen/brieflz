@@ -78,8 +78,8 @@ extern "C" {
  * @param src_size number of bytes to compress
  * @return maximum size of compressed data
  */
-BLZ_API unsigned long
-blz_max_packed_size(unsigned long src_size);
+BLZ_API size_t
+blz_max_packed_size(size_t src_size);
 
 /**
  * Get required size of `workmem` buffer.

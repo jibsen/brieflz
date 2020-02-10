@@ -427,8 +427,8 @@ blz_hash4(const unsigned char *p)
 	return blz_hash4_bits(p, BLZ_HASH_BITS);
 }
 
-unsigned long
-blz_max_packed_size(unsigned long src_size)
+size_t
+blz_max_packed_size(size_t src_size)
 {
 	return src_size + src_size / 8 + 64;
 }
