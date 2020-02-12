@@ -127,6 +127,21 @@ blz_pack_btparse(const void *src, void *dst, unsigned long src_size, void *workm
 
 	// Phase 1: Find lowest cost path arriving at each position
 	for (unsigned long cur = 1; cur <= last_match_pos; ++cur) {
+		// Adjust remaining costs to avoid overflow
+		if (cost[cur] > ULONG_MAX - 128) {
+			unsigned long min_cost = ULONG_MAX;
+
+			for (unsigned long i = cur; i <= src_size; ++i) {
+				min_cost = cost[i] < min_cost ? cost[i] : min_cost;
+			}
+
+			for (unsigned long i = cur; i <= src_size; ++i) {
+				if (cost[i] != ULONG_MAX) {
+					cost[i] -= min_cost;
+				}
+			}
+		}
+
 		// Check literal
 		if (cost[cur + 1] > cost[cur] + 9) {
 			cost[cur + 1] = cost[cur] + 9;
