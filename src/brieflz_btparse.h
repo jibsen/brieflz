@@ -31,7 +31,7 @@
 static size_t
 blz_btparse_workmem_size(size_t src_size)
 {
-	return (5 * src_size + 3 + LOOKUP_SIZE) * sizeof(unsigned long);
+	return (5 * src_size + 3 + LOOKUP_SIZE) * sizeof(blz_word);
 }
 
 // Forwards dynamic programming parse using binary trees, checking all
@@ -92,11 +92,11 @@ blz_pack_btparse(const void *src, void *dst, unsigned long src_size, void *workm
 		return (unsigned long) (blz_finalize(&bs) - (unsigned char *) dst);
 	}
 
-	unsigned long *const cost = (unsigned long *) workmem;
-	unsigned long *const mpos = cost + src_size + 1;
-	unsigned long *const mlen = mpos + src_size + 1;
-	unsigned long *const nodes = mlen + src_size + 1;
-	unsigned long *const lookup = nodes + 2 * src_size;
+	blz_word *const cost = (blz_word *) workmem;
+	blz_word *const mpos = cost + src_size + 1;
+	blz_word *const mlen = mpos + src_size + 1;
+	blz_word *const nodes = mlen + src_size + 1;
+	blz_word *const lookup = nodes + 2 * src_size;
 
 	// Initialize lookup
 	for (unsigned long i = 0; i < LOOKUP_SIZE; ++i) {
@@ -111,7 +111,7 @@ blz_pack_btparse(const void *src, void *dst, unsigned long src_size, void *workm
 
 	// Initialize to all literals with infinite cost
 	for (unsigned long i = 0; i <= src_size; ++i) {
-		cost[i] = ULONG_MAX;
+		cost[i] = BLZ_WORD_MAX;
 		mlen[i] = 1;
 	}
 
@@ -128,15 +128,15 @@ blz_pack_btparse(const void *src, void *dst, unsigned long src_size, void *workm
 	// Phase 1: Find lowest cost path arriving at each position
 	for (unsigned long cur = 1; cur <= last_match_pos; ++cur) {
 		// Adjust remaining costs to avoid overflow
-		if (cost[cur] > ULONG_MAX - 128) {
-			unsigned long min_cost = ULONG_MAX;
+		if (cost[cur] > BLZ_WORD_MAX - 128) {
+			blz_word min_cost = BLZ_WORD_MAX;
 
 			for (unsigned long i = cur; i <= src_size; ++i) {
 				min_cost = cost[i] < min_cost ? cost[i] : min_cost;
 			}
 
 			for (unsigned long i = cur; i <= src_size; ++i) {
-				if (cost[i] != ULONG_MAX) {
+				if (cost[i] != BLZ_WORD_MAX) {
 					cost[i] -= min_cost;
 				}
 			}
@@ -164,8 +164,8 @@ blz_pack_btparse(const void *src, void *dst, unsigned long src_size, void *workm
 		unsigned long pos = lookup[hash];
 		lookup[hash] = cur;
 
-		unsigned long *lt_node = &nodes[2 * cur];
-		unsigned long *gt_node = &nodes[2 * cur + 1];
+		blz_word *lt_node = &nodes[2 * cur];
+		blz_word *gt_node = &nodes[2 * cur + 1];
 		unsigned long lt_len = 0;
 		unsigned long gt_len = 0;
 
@@ -217,7 +217,7 @@ blz_pack_btparse(const void *src, void *dst, unsigned long src_size, void *workm
 				for (unsigned long i = max_len + 1; i <= len; ++i) {
 					unsigned long match_cost = blz_match_cost(cur - pos - 1, i);
 
-					assert(match_cost < ULONG_MAX - cost[cur]);
+					assert(match_cost < BLZ_WORD_MAX - cost[cur]);
 
 					unsigned long cost_there = cost[cur] + match_cost;
 

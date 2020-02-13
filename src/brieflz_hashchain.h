@@ -31,7 +31,7 @@
 static size_t
 blz_hashchain_workmem_size(size_t src_size)
 {
-	return (LOOKUP_SIZE + src_size) * sizeof(unsigned long);
+	return (LOOKUP_SIZE + src_size) * sizeof(blz_word);
 }
 
 // Lazy parsing with chains of previous positions.
@@ -49,8 +49,8 @@ blz_pack_hashchain(const void *src, void *dst, unsigned long src_size, void *wor
                    const unsigned long max_depth, const unsigned long accept_len)
 {
 	struct blz_state bs;
-	unsigned long *const lookup = (unsigned long *) workmem;
-	unsigned long *const prev = (unsigned long *) workmem + LOOKUP_SIZE;
+	blz_word *const lookup = (blz_word *) workmem;
+	blz_word *const prev = lookup + LOOKUP_SIZE;
 	const unsigned char *const in = (const unsigned char *) src;
 	const unsigned long last_match_pos = src_size > 4 ? src_size - 4 : 0;
 	unsigned long cur = 0;

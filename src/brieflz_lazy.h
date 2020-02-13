@@ -33,7 +33,7 @@ blz_lazy_workmem_size(size_t src_size)
 {
 	(void) src_size;
 
-	return LOOKUP_SIZE * sizeof(unsigned long);
+	return LOOKUP_SIZE * sizeof(blz_word);
 }
 
 // Lazy (non-greedy) parsing with one-byte-lookahead.
@@ -45,7 +45,7 @@ static unsigned long
 blz_pack_lazy(const void *src, void *dst, unsigned long src_size, void *workmem)
 {
 	struct blz_state bs;
-	unsigned long *const lookup = (unsigned long *) workmem;
+	blz_word *const lookup = (blz_word *) workmem;
 	const unsigned char *const in = (const unsigned char *) src;
 	const unsigned long last_match_pos = src_size > 4 ? src_size - 4 : 0;
 	unsigned long hash_pos = 0;

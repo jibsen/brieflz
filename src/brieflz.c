@@ -42,6 +42,15 @@
 #  define BLZ_BUILTIN_GCC
 #endif
 
+// Type used to store values in workmem.
+//
+// This is used to store positions and lengths, so src_size has to be within
+// the range of this type.
+//
+typedef uint32_t blz_word;
+
+#define BLZ_WORD_MAX UINT32_MAX
+
 // Number of bits of hash to use for lookup.
 //
 // The size of the lookup table (and thus workmem) depends on this.
@@ -56,9 +65,7 @@
 
 #define LOOKUP_SIZE (1UL << BLZ_HASH_BITS)
 
-#define WORKMEM_SIZE (LOOKUP_SIZE * sizeof(unsigned long))
-
-#define NO_MATCH_POS ((unsigned long) -1)
+#define NO_MATCH_POS ((blz_word) -1)
 
 // Internal data structure
 struct blz_state {
@@ -439,7 +446,7 @@ blz_workmem_size(size_t src_size)
 {
 	(void) src_size;
 
-	return WORKMEM_SIZE;
+	return LOOKUP_SIZE * sizeof(blz_word);
 }
 
 // Simple LZSS using hashing.
@@ -451,7 +458,7 @@ unsigned long
 blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 {
 	struct blz_state bs;
-	unsigned long *const lookup = (unsigned long *) workmem;
+	blz_word *const lookup = (blz_word *) workmem;
 	const unsigned char *const in = (const unsigned char *) src;
 	const unsigned long last_match_pos = src_size > 4 ? src_size - 4 : 0;
 	unsigned long hash_pos = 0;

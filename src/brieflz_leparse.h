@@ -32,7 +32,7 @@ static size_t
 blz_leparse_workmem_size(size_t src_size)
 {
 	return (LOOKUP_SIZE < 2 * src_size ? 3 * src_size : src_size + LOOKUP_SIZE)
-	     * sizeof(unsigned long);
+	     * sizeof(blz_word);
 }
 
 // Backwards dynamic programming parse with left-extension of matches.
@@ -102,11 +102,11 @@ blz_pack_leparse(const void *src, void *dst, unsigned long src_size, void *workm
 	// One detail is that we actually use src_size + 1 elements of cost,
 	// but we put mpos after it, where we do not need the first element.
 	//
-	unsigned long *const prev = (unsigned long *) workmem;
-	unsigned long *const mpos = prev + src_size;
-	unsigned long *const mlen = mpos + src_size;
-	unsigned long *const cost = prev;
-	unsigned long *const lookup = mpos;
+	blz_word *const prev = (blz_word *) workmem;
+	blz_word *const mpos = prev + src_size;
+	blz_word *const mlen = mpos + src_size;
+	blz_word *const cost = prev;
+	blz_word *const lookup = mpos;
 
 	// Phase 1: Build hash chains
 	const int bits = 2 * src_size < LOOKUP_SIZE ? BLZ_HASH_BITS : blz_log2(src_size);
@@ -179,7 +179,7 @@ blz_pack_leparse(const void *src, void *dst, unsigned long src_size, void *workm
 				// Find lowest cost match length
 				for (unsigned long i = max_len + 1; i <= len; ++i) {
 					unsigned long match_cost = blz_match_cost(cur - pos - 1, i);
-					assert(match_cost < ULONG_MAX - cost[cur + i]);
+					assert(match_cost < BLZ_WORD_MAX - cost[cur + i]);
 					unsigned long cost_here = match_cost + cost[cur + i];
 
 					if (cost_here < min_cost) {
@@ -203,7 +203,7 @@ blz_pack_leparse(const void *src, void *dst, unsigned long src_size, void *workm
 							--pos;
 							++min_cost_len;
 							unsigned long match_cost = blz_match_cost(cur - pos - 1, min_cost_len);
-							assert(match_cost < ULONG_MAX - cost[cur + min_cost_len]);
+							assert(match_cost < BLZ_WORD_MAX - cost[cur + min_cost_len]);
 							unsigned long cost_here = match_cost + cost[cur + min_cost_len];
 							cost[cur] = cost_here;
 							mpos[cur] = pos;

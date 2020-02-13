@@ -33,9 +33,9 @@ blz_sliding_workmem_size(size_t src_size, int window_log)
 {
 	(void) src_size;
 
-	assert(window_log > 0 && window_log < blz_log2(ULONG_MAX));
+	assert(window_log > 0 && window_log < blz_log2(BLZ_WORD_MAX));
 
-	return (LOOKUP_SIZE + (1UL << window_log)) * sizeof(unsigned long);
+	return (LOOKUP_SIZE + ((size_t) 1 << window_log)) * sizeof(blz_word);
 }
 
 // Lazy parsing with a sliding window of previous positions.
@@ -49,8 +49,8 @@ blz_pack_sliding(const void *src, void *dst, unsigned long src_size, void *workm
 		 const unsigned long accept_len)
 {
 	struct blz_state bs;
-	unsigned long *const lookup = (unsigned long *) workmem;
-	unsigned long *const prev = (unsigned long *) workmem + LOOKUP_SIZE;
+	blz_word *const lookup = (blz_word *) workmem;
+	blz_word *const prev = lookup + LOOKUP_SIZE;
 	const unsigned char *const in = (const unsigned char *) src;
 	const unsigned long last_match_pos = src_size > 4 ? src_size - 4 : 0;
 	const unsigned long window_size = 1UL << window_log;
