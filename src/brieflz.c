@@ -464,6 +464,8 @@ blz_pack(const void *src, void *dst, unsigned long src_size, void *workmem)
 	unsigned long hash_pos = 0;
 	unsigned long cur = 0;
 
+	assert(src_size < BLZ_WORD_MAX);
+
 	// Check for empty input
 	if (src_size == 0) {
 		return 0;

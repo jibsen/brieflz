@@ -58,6 +58,8 @@ blz_pack_leparse(const void *src, void *dst, unsigned long src_size, void *workm
 	const unsigned char *const in = (const unsigned char *) src;
 	const unsigned long last_match_pos = src_size > 4 ? src_size - 4 : 0;
 
+	assert(src_size < BLZ_WORD_MAX);
+
 	// Check for empty input
 	if (src_size == 0) {
 		return 0;
