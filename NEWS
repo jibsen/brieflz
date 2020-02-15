@@ -1,7 +1,7 @@
-BriefLZ 1.3.0 (TBD)
+BriefLZ 1.3.0 (2020-02-15)
 
-  * Add btparse algorithm, which is used for levels 8, 9, and optimal.
-  * Reduce memory usage on 64-bit Linux.
+  * Add btparse algorithm, which is used for levels 8, 9, and optimal
+  * Reduce memory usage on 64-bit Linux
 
 BriefLZ 1.2.0 (2018-10-25)
 
@@ -9,7 +9,7 @@ BriefLZ 1.2.0 (2018-10-25)
     better ratios by using more time/space
   * Slightly improve compression and decompression speed
   * The source is using some C99 features, for OpenWatcom compile with
-    `-za99` or as C++ with `-cc++`.
+    `-za99` or as C++ with `-cc++`
 
 BriefLZ 1.1.0 (2015-09-05)
 
