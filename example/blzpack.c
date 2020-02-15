@@ -47,6 +47,10 @@
  * and write_be32() functions.
  */
 
+#ifdef __MINGW32__
+#  define __USE_MINGW_ANSI_STDIO 1
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -147,9 +151,9 @@ read_be32(const byte *p)
 }
 
 static unsigned int
-ratio(unsigned long x, unsigned long y)
+ratio(unsigned long long x, unsigned long long y)
 {
-	if (x <= ULONG_MAX / 100) {
+	if (x <= ULLONG_MAX / 100) {
 		x *= 100;
 	}
 	else {
@@ -280,7 +284,7 @@ compress_file(const char *oldname, const char *packedname, int be_verbose,
 	byte *data = NULL;
 	byte *packed = NULL;
 	byte *workmem = NULL;
-	unsigned long insize = 0, outsize = 0;
+	unsigned long long insize = 0, outsize = 0;
 	static const char rotator[] = "-\\|/";
 	unsigned int counter = 0;
 	size_t n_read;
@@ -346,15 +350,15 @@ compress_file(const char *oldname, const char *packedname, int be_verbose,
 		fwrite(packed, 1, packedsize, packedfile);
 
 		/* Sum input and output size */
-		insize += (unsigned long) n_read;
-		outsize += (unsigned long) (packedsize + sizeof(header));
+		insize += n_read;
+		outsize += packedsize + sizeof(header);
 	}
 
 	clocks = clock() - clocks;
 
 	/* Show result */
 	if (be_verbose) {
-		fprintf(stderr, "in %lu out %lu ratio %u%% time %.2f\n",
+		fprintf(stderr, "in %llu out %llu ratio %u%% time %.2f\n",
 		        insize, outsize, ratio(outsize, insize),
 		        (double) clocks / (double) CLOCKS_PER_SEC);
 	}
@@ -393,7 +397,7 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 	FILE *packedfile = NULL;
 	byte *data = NULL;
 	byte *packed = NULL;
-	unsigned long insize = 0, outsize = 0;
+	unsigned long long insize = 0, outsize = 0;
 	static const char rotator[] = "-\\|/";
 	unsigned int counter = 0;
 	clock_t clocks;
@@ -497,15 +501,15 @@ decompress_file(const char *packedname, const char *newname, int be_verbose,
 		fwrite(data, 1, depackedsize, newfile);
 
 		/* sum input and output size */
-		insize += (unsigned long) (hdr_packedsize + sizeof(header));
-		outsize += (unsigned long) depackedsize;
+		insize += hdr_packedsize + sizeof(header);
+		outsize += depackedsize;
 	}
 
 	clocks = clock() - clocks;
 
 	/* Show result */
 	if (be_verbose) {
-		fprintf(stderr, "in %lu out %lu ratio %u%% time %.2f\n",
+		fprintf(stderr, "in %llu out %llu ratio %u%% time %.2f\n",
 		        insize, outsize, ratio(insize, outsize),
 		        (double) clocks / (double) CLOCKS_PER_SEC);
 	}
