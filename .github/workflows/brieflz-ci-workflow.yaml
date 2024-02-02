@@ -5,17 +5,17 @@ on: [push, pull_request]
 jobs:
   windows:
     name: Windows ${{ matrix.config.name }}
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     strategy:
       matrix:
         config:
           - name: MSVC x64
-            generator: Visual Studio 16 2019
+            generator: Visual Studio 17 2022
             cmake-flags: -A x64
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Configure
         run: cmake -G "${{ matrix.config.generator }}" ${{ matrix.config.cmake-flags }} -B build
@@ -44,13 +44,13 @@ jobs:
             cmake-flags: -DCMAKE_C_FLAGS_DEBUG='-O1 -g -fsanitize=address -fno-omit-frame-pointer'
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Configure
         run: cmake ${{ matrix.config.cmake-flags }} -DCMAKE_BUILD_TYPE=Debug -B build
 
       - name: Build
-        run: cd build && make VERBOSE=1
+        run: cd build && cmake --build . --verbose
 
       - name: Test
         run: cd build && ctest -V --output-on-failure --interactive-debug-mode 0
@@ -60,13 +60,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Configure
         run: cmake -DCMAKE_C_FLAGS_DEBUG='-g -O0 --coverage' -DCMAKE_BUILD_TYPE=Debug -B build
 
       - name: Build
-        run: cd build && make VERBOSE=1
+        run: cd build && cmake --build . --verbose
 
       - name: Test
         run: cd build && ctest -V --output-on-failure --interactive-debug-mode 0
@@ -75,6 +75,6 @@ jobs:
         run: cd build && gcov -abcfu CMakeFiles/brieflz.dir/src/*.c.gcno -o CMakeFiles/brieflz.dir/src
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           directory: ./build/
